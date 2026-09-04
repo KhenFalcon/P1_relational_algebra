@@ -1,0 +1,49 @@
+/**
+ * Copyright (c) 2025 Sami Menik, PhD. All rights reserved.
+ * 
+ * Unauthorized copying of this file, via any medium, is strictly prohibited.
+ * This software is provided "as is," without warranty of any kind.
+ */
+package uga.csx370.mydbimpl;
+
+import java.util.List;
+
+import uga.csx370.mydb.Relation;
+import uga.csx370.mydb.RelationBuilder;
+import uga.csx370.mydb.Type;
+
+public class Driver {
+    
+    public static void main(String[] args) {
+        // Following is an example of how to use the relation class.
+        // This creates a table with three columns with below mentioned
+        // column names and data types.
+        // After creating the table, data is loaded from a CSV file.
+        // Path should be replaced with a correct file path for a compatible
+        // CSV file.
+        
+        // Relation rel1 = new RelationBuilder()
+        //         .attributeNames(List.of("Col01_Name", "Col02_Name", "Col03_Name"))
+        //         .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.DOUBLE))
+        //         .build();
+        // rel1.loadData("/path/to/exported/csv_file");
+        // rel1.print();
+
+        Relation instructors = new RelationBuilder()
+            .attributeNames(List.of("ID", "name", "dept_name", "salary"))
+            .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
+            .build();
+        instructors.loadData("/home/khenfalcon/Downloads/mysql-files/instructor_export.csv");
+        System.out.println("\nMyID: 811281498");
+        instructors.print();
+
+        Relation students = new RelationBuilder()
+            .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
+            .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
+            .build();
+        students.loadData("/home/khenfalcon/Downloads/mysql-files/student_export.csv");
+        System.out.println("\nMyID: 811281498");
+        students.print(); // warning: a lot of data will be printed to the console
+    }
+
+}
