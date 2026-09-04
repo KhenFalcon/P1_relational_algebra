@@ -33,7 +33,7 @@ public class Driver {
             .attributeNames(List.of("ID", "name", "dept_name", "salary"))
             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
             .build();
-        instructors.loadData("/home/khenfalcon/Downloads/mysql-files/instructor_export.csv");
+        instructors.loadData("test-tables/instructor_export.csv");
         System.out.println("\nMyID: 811281498");
         instructors.print();
 
@@ -41,7 +41,7 @@ public class Driver {
             .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
             .build();
-        students.loadData("/home/khenfalcon/Downloads/mysql-files/student_export.csv");
+        students.loadData("test-tables/student_export.csv");
         System.out.println("\nMyID: 811281498");
         students.print(); // warning: a lot of data will be printed to the console
     }
