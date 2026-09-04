@@ -39,7 +39,7 @@ Are not something you generally need to worry about. It is simply how you copy e
 ```
 Adds the changes that have been pushed to the remote repository to your local copy. Note that this is only the changes that have been recorded in your own local cache (i.e. since the last time your local machine has checked). To make sure you get the most recent changes **fetch**, THEN **pull**.
 - `$ git fetch --all` - pulls and caches changes from all the remote branches
-- `$ git pull` - applies the cached remote changes (of your specific branch) to your local branch
+- `$ git pull` or `$ git pull origin main`- applies the cached remote changes (of your specific branch) to your local branch
 
 ### Pushing
 ```
