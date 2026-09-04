@@ -12,18 +12,16 @@ public class RAImpl implements RA {
 
     @Override
     public Relation select(Relation rel, Predicate p) {
-        // TODO Auto-generated method stub
-        // throw new UnsupportedOperationException("Unimplemented method 'select'");
-
+        // create a new relation to return as results
         Relation r = new RelationBuilder()
                 .attributeNames(rel.getAttrs())
                 .attributeTypes(rel.getTypes())
                 .build();
 
         int size = rel.getSize(); // call method only once
-        for(int i = 0; i < size; i++) { // O(n) * O(p.check()) time complexity
+        for(int i = 0; i < size && r.getSize() < 51; i++) { // set hard max of 50 rows to be returned.
             List<Cell> row = rel.getRow(i);
-            if(p.check(row)) {
+            if(p.check(row)) { // add the row to resultant if it passes the predicate's check
                 r.insert(row);
             }
         }
