@@ -34,9 +34,7 @@ public class Driver {
             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
             .build();
         instructors.loadData("test-tables/instructor_export.csv");
-        System.out.println("\nMyID: jcm68203 : 811281498");
         instructors.print();
-        System.out.println(instructors.getSize() + " rows in the relation.");
 
         // Relation students = new RelationBuilder()
         //     .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
