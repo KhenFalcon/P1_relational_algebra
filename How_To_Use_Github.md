@@ -19,7 +19,7 @@ There's a lot of text here, but it is really just the basics of how to use git a
     - **Note:** unlike forking, the `clone` command still retains its connection to the remote repository. This means (theoretically) you can work on your local "clone" repository, then pull (read others' changes) and push (write your own changes) to the remote repository. 
 4) You may have to ask the repository owner ( Josh >:D ) for collaborator status, in order to push (write) to the remote repository
 5) Create your own working branch: `$ git branch <name>-working-branch`
-6) Checkout to your working branch: `$ git checkout -v <name>-working-branch`
+6) Checkout to your working branch: `$ git checkout <name>-working-branch`
 
 Steps 5 and 6 are necessary in order to avoid working collisions. Especially because most of us will be working on the same file. Please make sure to not work on the main branch and only your own working branch.
 
@@ -48,3 +48,5 @@ Adds the changes that have been pushed to the remote repository to your local co
         <-(copies from)<- (LOCAL) working-branch    // push to remote branch
 ```
 Adds the changes you made on your local branch to the remote copy of the same branch. It is ALWAYS recommended that you **pull** THEN **push** to avoid any "collissions" in the remote repository. After you push to your remote working-branch, you can then go to the repository on github to then create a pull request so your changes can be added to the main branch.
+
+Prior to pushing your changes, you have to make a "commit". Commits are essentially just a list of changes that you have made with an attached message with them to summarize what you did. When you push your "changes" you really are pushing these commits.
