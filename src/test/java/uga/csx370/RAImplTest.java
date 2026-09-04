@@ -15,14 +15,20 @@ import uga.csx370.mydbimpl.RAImpl;
 // Testing framework imports
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * A testing class for the RAImpl class. This class contains unit tests to verify the functionality
  * of the RAImpl class methods.
  * 
+ * Test instance is set to the class level so that the private fields can be initialized once 
+ * (in setup()) and reused across all test methods.
+ * 
  * jcm68203
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RAImplTest {
 
     private RAImpl raImpl;
@@ -48,11 +54,12 @@ public class RAImplTest {
     public void validInstantiation() {
         raImpl = new RAImpl();
         assertNotNull(raImpl);
+
     }
 
     @Test
     public void testSelect() {
-        Predicate predicate = new PredicateImpl(3, ">", Cell.val(80000.0));
+        Predicate predicate = new PredicateImpl(2, "=", Cell.val("Athletics"));
 
         Relation result = raImpl.select(instructor_relation, predicate);
         result.print();
