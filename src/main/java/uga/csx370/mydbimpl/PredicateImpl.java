@@ -13,7 +13,7 @@ import uga.csx370.mydb.Type;
  * 2) the operator to be used for comparison
  * 3) the criterion to compare against
  * 
- * Valid operators are: "=", "!=", "<", "<=", ">", ">="
+ * Valid operators are: "=", "!=", "<", "<=", ">", ">=", "*"
  * 
  * Warning: the criterion is a cell object and its type must match the type of the column being 
  * checked, check() will throw an IllegalArgumentException if the types do not match.
@@ -45,14 +45,16 @@ public class PredicateImpl implements Predicate {
                 return cell.equals(criterion);
             case "!=":
                 return !cell.equals(criterion);
+            case "*":
+                return true;
         }
 
         // check for comparisons that are only valid for numeric types (doubles and ints) (i.e. <, <=, >, >=)
         try {
             // Use Integer.compare() or Double.compare() to generalize the comparison logic to one variable
-            double resultant = cell.getType() == Type.INTEGER ?
-                Integer.compare(cell.getAsInt(), criterion.getAsInt()) :
-                    Double.compare(cell.getAsDouble(), criterion.getAsDouble());
+            double resultant = cell.getType() == Type.INTEGER 
+                ? Integer.compare(cell.getAsInt(), criterion.getAsInt())
+                : Double.compare(cell.getAsDouble(), criterion.getAsDouble());
 
             switch (operator) {
                 case "<":
@@ -73,5 +75,11 @@ public class PredicateImpl implements Predicate {
             else 
                 throw e;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "PredicateImpl [columnIndex=" + columnIndex + ", operator=" + operator + ", criterion=" + criterion
+                + "]";
     }
 }
