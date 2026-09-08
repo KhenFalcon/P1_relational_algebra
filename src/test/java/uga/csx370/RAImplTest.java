@@ -59,12 +59,46 @@ public class RAImplTest {
 
     @Test
     public void testSelect() {
-        Predicate predicate = new PredicateImpl(2, "=", Cell.val("Athletics"));
+        Predicate[] predicates = new PredicateImpl[] {
+            new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
+            new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
+            new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
+            new PredicateImpl(1, "=", Cell.val("Mird")), // name is Mird
+            new PredicateImpl(1, "!=", Cell.val("Mird")), // name is not Mird
+            new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
+            new PredicateImpl(0, ">", Cell.val(60000)), // ID is greater than 60000
+            new PredicateImpl(0, "*", Cell.val(0)), // wildcard operator, should return all rows
+        };
 
-        Relation result = raImpl.select(instructor_relation, predicate);
-        result.print();
-        // assertNotNull(result);
-        // assertEquals(3, result.getSize());
+        for (Predicate p : predicates) {
+            Relation result = raImpl.select(instructor_relation, p);
+            
+            assertNotNull(result);
+            assertTrue(result.getSize() <= 50);
+            assertFalse(result.getSize() < 0);
+            
+            System.out.println("Predicate: " + p.toString());
+            result.print();
+            System.out.println();
+        }
+
+        Predicate[] badPredicates = new PredicateImpl[] {
+            new PredicateImpl(0, "=", Cell.val("Mird")), // ID is an integer, not a string
+            new PredicateImpl(3, ">", Cell.val("Mird")), // salary is a double, not a string
+            new PredicateImpl(1, "<", Cell.val(100)), // name is a string, not an integer
+            new PredicateImpl(0, "&", Cell.val(100)), // invalid operator
+            new PredicateImpl(-1, "=", Cell.val(100)), // invalid column index
+            new PredicateImpl(100, "=", Cell.val(100)), // invalid column index
+            new PredicateImpl(0, "", Cell.val(10000)), // Invalid operator (empty string)
+            new PredicateImpl(0, null, Cell.val(10000)), // Invalid operator (null)
+            new PredicateImpl(0, "=", null), // Invalid criterion (null)
+        }; 
+
+        for (Predicate p : badPredicates) {
+            assertThrows(Exception.class, () -> {
+                raImpl.select(instructor_relation, p);
+            });
+        }
     }
 
     @Test
