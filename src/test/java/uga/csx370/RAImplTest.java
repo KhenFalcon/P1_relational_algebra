@@ -3,9 +3,9 @@ package uga.csx370;
 // Util Imports
 import java.util.List;
 
+// UGA imports
 import uga.csx370.mydb.Cell;
 import uga.csx370.mydb.Predicate;
-// UGA imports
 import uga.csx370.mydb.Relation;
 import uga.csx370.mydb.RelationBuilder;
 import uga.csx370.mydb.Type;
@@ -59,6 +59,7 @@ public class RAImplTest {
 
     @Test
     public void testSelect() {
+        // --- Good Tests -------------------------------------------------------------------------
         Predicate[] predicates = new PredicateImpl[] {
             new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
             new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
@@ -82,6 +83,7 @@ public class RAImplTest {
             System.out.println();
         }
 
+        // --- Bad Tests --------------------------------------------------------------------------
         Predicate[] badPredicates = new PredicateImpl[] {
             new PredicateImpl(0, "=", Cell.val("Mird")), // ID is an integer, not a string
             new PredicateImpl(3, ">", Cell.val("Mird")), // salary is a double, not a string
@@ -97,6 +99,50 @@ public class RAImplTest {
         for (Predicate p : badPredicates) {
             assertThrows(Exception.class, () -> {
                 raImpl.select(instructor_relation, p);
+            });
+        }
+    }
+
+    @Test
+    public void testProject() {
+        // --- Good Tests -------------------------------------------------------------------------
+        List<List<String>> attrLists = List.of(
+            List.of("ID", "name", "dept_name", "salary"), // all attributes
+            List.of("ID", "name"), // first two attributes
+            List.of("dept_name", "salary"), // last two attributes
+            List.of("name"), // single attribute
+            List.of("ID", "salary"), // non-contiguous attributes
+            List.of("ID", "dept_name", "salary") // three attributes
+        );
+
+        for(List<String> attr : attrLists) {
+            Relation result = raImpl.project(instructor_relation, attr);
+            
+            assertNotNull(result);
+            assertTrue(result.getSize() <= 50);
+            assertFalse(result.getSize() < 0);
+            assertEquals(attr.size(), result.getAttrs().size());
+            assertEquals(attr.size(), result.getTypes().size());
+
+            System.out.println("Attributes: " + attr.toString());
+            result.print();
+            System.out.println();
+        }
+
+        // --- Bad Tests --------------------------------------------------------------------------
+        List<List<String>> badAttrLists = List.of(
+            List.of("ID", "name", "dept_name", "salary", "extra"), // extra attribute
+            List.of("ID", "name", "dept_name", ""), // empty attribute
+            List.of("ID", "name", "blahblah", "salary"), // invalid attribute
+            List.of("@#$%", "name", "dept_name", "salary"), // invalid attribute
+            List.of(),
+            List.of("\n"),
+            List.of("   ")
+        );
+        
+        for(List<String> attr : badAttrLists) {
+            assertThrows(Exception.class, () -> {
+                raImpl.project(instructor_relation, attr);
             });
         }
     }

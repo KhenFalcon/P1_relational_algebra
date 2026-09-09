@@ -31,6 +31,9 @@ public class RAImpl implements RA {
 
     @Override
     public Relation project(Relation rel, List<String> attrs) {
+        if(attrs == null || attrs.isEmpty())
+            throw new IllegalArgumentException("Attribute list cannot be null or empty.");
+
         // get a list of all the columns-numbers selected
         int[] attrIndices = new int[attrs.size()];
         for (int i = 0; i < attrs.size(); i++)
@@ -62,7 +65,7 @@ public class RAImpl implements RA {
             for (int j = 0; j < attrs.size(); j++) {
                 proj_row.add( // ...and add the cell-data to proj_row
                         row.get( // ...grab its cell using its index in rel
-                                attrIndices[i] // for each attribute selected to be projected...        
+                                attrIndices[j] // for each attribute selected to be projected...        
                         )
                 );
             }
