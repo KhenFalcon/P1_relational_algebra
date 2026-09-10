@@ -1,6 +1,8 @@
 package uga.csx370.mydbimpl;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import uga.csx370.mydb.Cell;
 import uga.csx370.mydb.Predicate;
@@ -77,14 +79,57 @@ public class RAImpl implements RA {
 
     @Override
     public Relation union(Relation rel1, Relation rel2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'union'");
+        checkCompatible(rel1, rel2);
+
+        Relation output = new RelationBuilder()
+                .attributeNames(rel1.getAttrs())
+                .attributeTypes(rel1.getTypes())
+                .build();
+
+        Set<List<Cell>> uniqueRows = new HashSet<>();
+
+        for (int i = 0; i < rel1.getSize(); i++) uniqueRows.add(rel1.getRow(i));
+        for (int i = 0; i < rel2.getSize(); i++) uniqueRows.add(rel2.getRow(i));
+
+        for (List<Cell> uniqueRow : uniqueRows) output.insert(uniqueRow);
+
+        return output;
     }
 
     @Override
     public Relation intersect(Relation rel1, Relation rel2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'intersect'");
+        checkCompatible(rel1, rel2);
+
+        Relation output = new RelationBuilder()
+                .attributeNames(rel1.getAttrs())
+                .attributeTypes(rel1.getTypes())
+                .build();
+
+        Set<List<Cell>> uniqueRows = new HashSet<>();
+
+        Set<List<Cell>> rel1Rows = new HashSet<>();
+        for (int i = 0; i < rel1.getSize(); i++) rel1Rows.add(rel1.getRow(i));
+
+        for (int i = 0; i < rel2.getSize(); i++) {
+            List<Cell> rel2Row = rel2.getRow(i);
+            if (rel1Rows.contains(rel2Row)) {
+                uniqueRows.add(rel2Row);
+            }
+        }
+
+        for (List<Cell> uniqueRow : uniqueRows) output.insert(uniqueRow);
+
+        return output;
+    }
+
+    private void checkCompatible(Relation rel1, Relation rel2) {
+        if (rel1.getAttrs().size() != rel2.getAttrs().size()) {
+            throw new IllegalArgumentException("Relations are not compatible: different arity.");
+        }
+
+        if (!rel1.getTypes().equals(rel2.getTypes())) {
+            throw new IllegalArgumentException("Relations are not compatible: different attribute types.");
+        }
     }
 
     @Override
