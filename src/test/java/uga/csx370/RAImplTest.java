@@ -148,6 +148,136 @@ public class RAImplTest {
     }
 
     @Test
+    public void testUnion() {
+
+        // Valid tests (borrowed predicates from Joshua's select tests!)
+        PredicateImpl[] predicates = new PredicateImpl[] {
+                new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
+                new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
+                new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
+                new PredicateImpl(1, "=", Cell.val("Mird")), // name is Mird
+                new PredicateImpl(1, "!=", Cell.val("Mird")), // name is not Mird
+                new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
+                new PredicateImpl(0, ">", Cell.val(60000)), // ID is greater than 60000
+                new PredicateImpl(0, "*", Cell.val(0)), // wildcard operator, should return all rows
+        };
+
+        for (int i = 0; i < predicates.length - 1; i++) {
+            PredicateImpl predicate1 = predicates[i];
+            PredicateImpl predicate2 = predicates[i + 1];
+
+            Relation predicateResult1 = raImpl.select(instructor_relation, predicate1);
+            Relation predicateResult2 = raImpl.select(instructor_relation, predicate2);
+
+            assertNotNull(predicateResult1);
+            assertTrue(predicateResult1.getSize() <= 50);
+            assertFalse(predicateResult1.getSize() < 0);
+
+            assertNotNull(predicateResult2);
+            assertTrue(predicateResult2.getSize() <= 50);
+            assertFalse(predicateResult2.getSize() < 0);
+
+            Relation unionResult = raImpl.union(predicateResult1, predicateResult2);
+
+            assertNotNull(unionResult);
+            assertTrue(unionResult.getSize() >= predicateResult1.getSize());
+            assertTrue(unionResult.getSize() >= predicateResult2.getSize());
+            assertTrue(unionResult.getSize() <= predicateResult1.getSize() + predicateResult2.getSize());
+
+            System.out.printf("Union relation of predicates %d & %d: ", i, i + 1);
+            unionResult.print();
+            System.out.println();
+        }
+
+        // Invalid Tests
+
+        // Different Arity
+        Relation projRel1 = raImpl.project(instructor_relation, List.of("ID", "name"));
+        Relation projRel2 = raImpl.project(instructor_relation, List.of("ID", "name", "salary"));
+
+        assertNotNull(projRel1);
+        assertTrue(projRel1.getSize() <= 50);
+        assertFalse(projRel1.getSize() < 0);
+
+        assertNotNull(projRel2);
+        assertTrue(projRel2.getSize() <= 50);
+        assertFalse(projRel2.getSize() < 0);
+
+        assertThrows(IllegalArgumentException.class, () -> raImpl.union(projRel1, projRel2));
+
+        // Different Attribute Types
+        Relation projRel3 = raImpl.project(instructor_relation, List.of("dept_name", "salary"));
+
+        assertNotNull(projRel3);
+        assertTrue(projRel3.getSize() <= 50);
+        assertFalse(projRel3.getSize() < 0);
+
+        assertThrows(IllegalArgumentException.class, () -> raImpl.union(projRel1, projRel3));
+    }
+
+    @Test
+    public void testIntersect() {
+
+        // Valid tests (borrowed predicates from Joshua's select tests!)
+        PredicateImpl[] predicates = new PredicateImpl[] {
+                new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
+                new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
+                new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
+                new PredicateImpl(1, "!=", Cell.val("Mird")), // name is not Mird
+                new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
+                new PredicateImpl(0, ">", Cell.val(60000)), // ID is greater than 60000
+                new PredicateImpl(0, "*", Cell.val(0)), // wildcard operator, should return all rows
+        };
+
+        for (int i = 0; i < predicates.length - 1; i++) {
+            PredicateImpl predicate1 = predicates[i];
+            PredicateImpl predicate2 = predicates[i + 1];
+
+            Relation predicateResult1 = raImpl.select(instructor_relation, predicate1);
+            Relation predicateResult2 = raImpl.select(instructor_relation, predicate2);
+
+            assertNotNull(predicateResult1);
+            assertTrue(predicateResult1.getSize() <= 50);
+            assertFalse(predicateResult1.getSize() < 0);
+
+            assertNotNull(predicateResult2);
+            assertTrue(predicateResult2.getSize() <= 50);
+            assertFalse(predicateResult2.getSize() < 0);
+
+            Relation intersectResult = raImpl.intersect(predicateResult1, predicateResult2);
+
+            System.out.printf("Intersect relation of predicates %d & %d: ", i, i + 1);
+            intersectResult.print();
+            System.out.println();
+        }
+
+        // Invalid Tests
+
+        // Different Arity
+        Relation projRel1 = raImpl.project(instructor_relation, List.of("ID", "name"));
+        Relation projRel2 = raImpl.project(instructor_relation, List.of("ID", "name", "salary"));
+
+        assertNotNull(projRel1);
+        assertTrue(projRel1.getSize() <= 50);
+        assertFalse(projRel1.getSize() < 0);
+
+        assertNotNull(projRel2);
+        assertTrue(projRel2.getSize() <= 50);
+        assertFalse(projRel2.getSize() < 0);
+
+        assertThrows(IllegalArgumentException.class, () -> raImpl.intersect(projRel1, projRel2));
+
+        // Different Attribute Types
+        Relation projRel3 = raImpl.project(instructor_relation, List.of("dept_name", "salary"));
+
+        assertNotNull(projRel3);
+        assertTrue(projRel3.getSize() <= 50);
+        assertFalse(projRel3.getSize() < 0);
+
+        assertThrows(IllegalArgumentException.class, () -> raImpl.intersect(projRel1, projRel3));
+    }
+
+    @Test
     public void validInstructorRelation() {
         assertNotNull(instructor_relation);
         assertEquals(4, instructor_relation.getAttrs().size());
