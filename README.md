@@ -13,7 +13,7 @@ This project is meant to implement the RAImpl class and demonstrate understandin
 
 This Project's GitHub Repository: https://github.com/KhenFalcon/P1_relational_algebra
 
-## Contributions
+## Team Members' Contributions
 
 ### Provided Files:
 - all files in the `src/main/.../mydb` directory
@@ -21,12 +21,17 @@ This Project's GitHub Repository: https://github.com/KhenFalcon/P1_relational_al
 - `src/main/.../Driver.java`
 
 ### Amy Vu
+- Implemented union() and intersect() methods in `RAImple.java`
+- Created private method, checkCompatable(), in `RAImple.java`
+- Created testUnion() and testIntersect() methods in `RAImplTest.java`
 ### Mia Martiez
 ### Joshua Mark
-- Partly Contributed to implementing `Driver.java`
+- Parital Contribution to implementing `Driver.java`
 - Implemented the select() and project() methods in `RAImpl.java`
 - Created and copied the testing .csv files to the `test-tables` directory
 - Created the `RAImplTest.java` file to test the method implementations in `RAImpl.java`.
+- Created setup(), contextLoads(), validInstallation(), validInstructorRelation(), testSelect(), and testProject() methods in `RAImpleTest.java` 
 - Created the `PredicateImpl.java` file as a substitute implementation of the `Predicate.java` interface. It was created in the process of creating the `RAImplTest.java` tests.
 - Created the GroupMe and GitHub repository for group coordination.
 ### Sasha Park
+### Adiva Parisa
