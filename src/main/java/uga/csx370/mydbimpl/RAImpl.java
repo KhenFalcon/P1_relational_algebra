@@ -236,7 +236,9 @@ public class RAImpl implements RA {
             return true;
         };
 
+
         Relation theta_join = select(cartProduct, pred_natural_join); 
+        theta_join.print();
         
         List<String> tj_attrs = theta_join.getAttrs();
         List<Integer> attrs_index = new ArrayList<>();
