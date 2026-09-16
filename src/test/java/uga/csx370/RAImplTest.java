@@ -288,4 +288,24 @@ public class RAImplTest {
         assertNotNull(firstCell);
         assertEquals(Type.INTEGER, firstCell.getType());
     }
+
+
+
+    @Test
+    public void testRename() {
+        Relation rel_rename = raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("rel1_ID", "rel1_name", "rel1_dept_name", "rel1_salary"));
+        rel_rename.print();
+        System.out.println(rel_rename.getAttrs());
+
+    }
+
+    @Test
+    public void testNaturalJoin() {
+        Relation student_relation = new RelationBuilder()
+            .attributeNames(List.of("ID", "name", "dept_name", "salary"))
+            .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
+            .build();
+        instructor_relation.loadData("test-tables/instructor_export.csv");
+        Relation theta_join = raImpl.join(instructor_relation, instructor_relation);
+    }
 }
