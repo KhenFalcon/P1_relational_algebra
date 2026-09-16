@@ -254,7 +254,7 @@ public class RAImpl implements RA {
 
         for (int i = 0; i < index_vals.size(); i ++) {
             if (i %2 != 0) {
-                odd_ins.add(i, index_vals.get(i));
+                odd_ins.add(index_vals.get(i));
             }
             //gets odd value indicies from index_vals
         }
