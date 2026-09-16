@@ -299,12 +299,33 @@ public class RAImplTest {
     }
 
     @Test
+    public void testCartesianProduct() {
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+        Relation cartesianProduct = raImpl.cartesianProduct(instructor_relation, course_relation);
+        cartesianProduct.print();
+        System.out.println(instructor_relation.getAttrs());
+        System.out.println(course_relation.getAttrs());
+        System.out.println(cartesianProduct.getAttrs());
+    }
+
+    @Test
     public void testNaturalJoin() {
-        Relation student_relation = new RelationBuilder()
-            .attributeNames(List.of("ID", "name", "dept_name", "salary"))
-            .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
-            .build();
-        instructor_relation.loadData("test-tables/instructor_export.csv");
-        Relation theta_join = raImpl.join(instructor_relation, instructor_relation);
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+        Relation natural_join = raImpl.join(instructor_relation, course_relation);
+        natural_join.print();
+        System.out.println(natural_join.getAttrs());
+
+    }
+
+    @Test
+    public void testThetaJoin() {
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+        Relation theta_join = raImpl.join(instructor_relation, course_relation, null);
+        theta_join.print();
+        System.out.println(theta_join.getAttrs());
+
     }
 }
