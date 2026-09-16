@@ -1,5 +1,6 @@
 package uga.csx370.mydbimpl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -141,25 +142,149 @@ public class RAImpl implements RA {
     @Override
     public Relation rename(Relation rel, List<String> origAttr, List<String> renamedAttr) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'rename'");
+        //throw new UnsupportedOperationException("Unimplemented method 'rename'");
+
+        Relation rename_rel = new RelationBuilder().attributeNames(renamedAttr).attributeTypes(rel.getTypes()).build();
+        
+        for (int i = 0; i < rel.getSize(); i++) {
+            rename_rel.insert(rel.getRow(i));
+        }
+
+        return rename_rel;
+
     }
 
     @Override
     public Relation cartesianProduct(Relation rel1, Relation rel2) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'cartesianProduct'");
+        //throw new UnsupportedOperationException("Unimplemented method 'cartesianProduct'");
+        List<String> attrs_rel1_rename = new ArrayList<>();
+        List<String> attrs_rel2_rename = new ArrayList<>();
+
+        for (String attrs : rel1.getAttrs()) {
+            String rel1_rename = "rel1." + attrs; // adds prefix to specifc attribute
+            attrs_rel1_rename.add(rel1_rename); // adds the prefixed attribute to the ArrayList of renamed attributes for rel1
+        } // for loop to add prefix 'rel1.' to each attribute in order to have unique column names
+        
+        for (String attrs : rel2.getAttrs()) {
+            String rel2_rename = "rel2." + attrs; // adds prefix to each attribute
+            attrs_rel2_rename.add(rel2_rename); // adds prefixed attributes to ArrayList of renamed attributes for rel2
+        } // for loop to rename attributes in rel2 
+
+
+        List<String> attrs_combined = new ArrayList<>(attrs_rel1_rename);
+        attrs_combined.addAll(attrs_rel2_rename);
+        System.out.println(attrs_combined); // ArrayList of combined attributes to make new relation
+
+        List<Type> attrs_types_rel1 = rel1.getTypes();
+        List<Type> attrs_types_rel2 = rel2.getTypes();
+
+        List<Type> attrs_types_combined = new ArrayList<>(attrs_types_rel1);
+        attrs_types_combined.addAll(attrs_types_rel2); // ArrayList of combined attribute types to make new relation
+        System.out.println(attrs_types_combined);
+
+        // builds new relation to store the cartesian product 
+        Relation cartProd = new RelationBuilder().attributeNames(attrs_combined).attributeTypes(attrs_types_combined).build();
+        
+        for (int i = 0; i < rel1.getSize(); i++) {
+            List<Cell> row_rel1 = rel1.getRow(i); // current row in rel1
+            for (int j = 0; j < rel2.getSize(); j++) {
+                List<Cell>  row_rel2 = rel2.getRow(j); // current row in rel2
+                
+                List<Cell> row1_row2_comb = new ArrayList<>(row_rel1);
+                row1_row2_comb.addAll(row_rel2); // combine values in rows
+
+                cartProd.insert(row1_row2_comb); //inserts new row into relation cartProd
+            } // all rows of rel2
+
+        } // outer for loop for row in rel1 -> combines specific row with all the rows in rel2
+
+        return cartProd; // returns cartesian product
+
+
     }
 
     @Override
     public Relation join(Relation rel1, Relation rel2) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'join'");
+        //throw new UnsupportedOperationException("Unimplemented method 'join'");
+
+        List<String> attrs_rel1 = rel1.getAttrs(); // gets rel1 attributes
+        List<String> attrs_rel2 = rel2.getAttrs(); // gets rel2 attributes
+
+        List<String> common_attrs = new ArrayList<>(attrs_rel1); 
+        common_attrs.retainAll(attrs_rel2); // gets common attributes from both rel1 and rel2 relations
+
+        Relation cartProduct = cartesianProduct(rel1, rel2); // cartesian product between rel1 and rel2
+        List<Integer> index_vals = new ArrayList<>(); // indexes of common attributes 
+
+  
+        int index = 0; // keeps track of common_attrs index -> default if only 1 common attribute 
+        for (int i = 0; i < common_attrs.size() *2; i++) {
+            if (i % 2 == 0) { // keep track of pairs
+                index_vals.add(i, cartProduct.getAttrIndex("rel1." + common_attrs.get(index)));
+                index_vals.add(i + 1, cartProduct.getAttrIndex("rel2." + common_attrs.get(index)));
+                index++; // increments index -> useful if common_attrs has length > 1
+            }
+
+        }     
+
+        Predicate pred_natural_join = (row) -> {
+            for (int i = 0; i < index_vals.size() - 1; i++) {
+                if (i % 2 == 0) {
+                    if (!row.get(index_vals.get(i)).equals(row.get(index_vals.get(i + 1)))) {
+                        return false;
+                    }
+                    // done to be able to access the pairs, i.e. rel1.attr and rel2.attr 
+                }
+            } // checks if cell value at common columns equal one another 
+
+            return true;
+        };
+
+        Relation theta_join = select(cartProduct, pred_natural_join); 
+        
+        List<String> tj_attrs = theta_join.getAttrs();
+        List<Integer> attrs_index = new ArrayList<>();
+        for (int i = 0; i < tj_attrs.size(); i ++) {
+            attrs_index.add(i); // gives indices 0 to n-1
+        }
+
+        List<Integer> odd_ins = new ArrayList<>();
+
+        for (int i = 0; i < index_vals.size(); i ++) {
+            if (i %2 != 0) {
+                odd_ins.add(i, index_vals.get(i));
+            }
+            //gets odd value indicies from index_vals
+        }
+
+        List<Integer> unique_inds = new ArrayList<>(attrs_index);
+        unique_inds.removeAll(odd_ins); // removes common rel2 attrs 
+
+        List<String> natural_join_attrs = new ArrayList<>(); // new attrs for natural join merging common attrs
+
+        for (int i = 0; i < unique_inds.size(); i ++) {
+            natural_join_attrs.add(i, tj_attrs.get(unique_inds.get(i)));
+            // gets attribute names 
+        }
+        Relation natural_join = project(theta_join, natural_join_attrs); // natural join
+
+        return natural_join;
+        
     }
 
     @Override
     public Relation join(Relation rel1, Relation rel2, Predicate p) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'join'");
+        //throw new UnsupportedOperationException("Unimplemented method 'join'");
+
+        // do cartProd first and then do theta join
+
+        Relation cartProduct = cartesianProduct(rel1, rel2); //cartesian product between rel1 and rel2
+        Relation theta_join = select(cartProduct, p); // specific rows are selected based on the predicate
+
+        return theta_join; //returns theta_join with all columns 
     }
 
 }
