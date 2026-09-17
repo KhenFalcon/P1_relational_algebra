@@ -1,5 +1,6 @@
 package uga.csx370.mydbimpl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +23,7 @@ public class RAImpl implements RA {
                 .build();
 
         int size = rel.getSize(); // call method only once
-        for(int i = 0; i < size && r.getSize() < 51; i++) { // set hard max of 50 rows to be returned.
+        for(int i = 0; i < size; i++) { // set hard max of 50 rows to be returned.
             List<Cell> row = rel.getRow(i);
             if(p.check(row)) { // add the row to resultant if it passes the predicate's check
                 r.insert(row);
@@ -36,42 +37,36 @@ public class RAImpl implements RA {
         if(attrs == null || attrs.isEmpty())
             throw new IllegalArgumentException("Attribute list cannot be null or empty.");
 
-        // get a list of all the columns-numbers selected
-        int[] attrIndices = new int[attrs.size()];
-        for (int i = 0; i < attrs.size(); i++)
-            attrIndices[i] = rel.getAttrIndex(attrs.get(i));
-
+        // get the types of the projected attributes from the original relation
         List<Type> relTypes = rel.getTypes();
-        List<Type> attrTypes = relTypes.subList(0, 0);
-        // --- read the next few comments backwards -----------------------------------------------
+        List<Type> attrTypes = new ArrayList<>();
         for (int i = 0; i < attrs.size(); i++) {
-            attrTypes.add( // ... and add only the selected types to attrTypes 
-                    relTypes.get( // ... get its attribute-type from relTypes
-                            attrIndices[i] // for each attribute selected to be projected...
-                    )  
-            );
+            int attr_index = rel.getAttrIndex(attrs.get(i)); // for each attribute selected to be projected...
+            Type attr_type = relTypes.get(attr_index); // ... get its attribute-type from relTypes
+            attrTypes.add(attr_type); // ... and add only the selected types to attrTypes 
         }
-        // ----------------------------------------------------------------------------------------
 
+        // create a new relation to return as results
         Relation r = new RelationBuilder()
                 .attributeNames(attrs)
                 .attributeTypes(attrTypes)
                 .build();
 
-        int size = rel.getSize(); // call method only once
-        for(int i = 0; i < size && r.getSize() < 51; i++) { // set hard max of 50 rows to be returned.
-            List<Cell> row = rel.getRow(i);
-            List<Cell> proj_row = row.subList(0, 0); // creates empty list
+        // Debugging output
+        // System.out.println("Projecting attributes: " + attrs);
+        // System.out.println("Full relation attributes: " + rel.getAttrs());
 
-            // --- read the next few comments backwards -------------------------------------------
+        int size = rel.getSize(); // call method only once
+        for(int i = 0; i < size; i++) {
+            List<Cell> row = rel.getRow(i);
+            List<Cell> proj_row = new ArrayList<>(); // creates empty list
+
             for (int j = 0; j < attrs.size(); j++) {
-                proj_row.add( // ...and add the cell-data to proj_row
-                        row.get( // ...grab its cell using its index in rel
-                                attrIndices[j] // for each attribute selected to be projected...        
-                        )
-                );
+                int proj_cell_index = rel.getAttrIndex(attrs.get(j)); // grab the index of the projected attribute in rel...
+                Cell proj_cell = row.get(proj_cell_index); // ...grab the cell in row using that index
+                proj_row.add(proj_cell); // ...and add the cell-data to proj_row
             }
-            // ------------------------------------------------------------------------------------
+            r.insert(proj_row);
         }
 
         return r;
