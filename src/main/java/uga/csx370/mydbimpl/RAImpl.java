@@ -39,8 +39,11 @@ public class RAImpl implements RA {
 
         // get a list of all the columns-numbers selected
         int[] attrIndices = new int[attrs.size()];
-        for (int i = 0; i < attrs.size(); i++)
+        for (int i = 0; i < attrs.size(); i++) {
             attrIndices[i] = rel.getAttrIndex(attrs.get(i));
+            System.out.println("Atribute:" + attrs.get(i) + " mapped to index:" + attrIndices[i]);
+        }
+
 
         List<Type> relTypes = rel.getTypes();
         List<Type> attrTypes = relTypes.subList(0, 0);
