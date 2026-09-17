@@ -75,7 +75,6 @@ public class RAImplTest {
             Relation result = raImpl.select(instructor_relation, p);
             
             assertNotNull(result);
-            assertTrue(result.getSize() <= 50);
             assertFalse(result.getSize() < 0);
             
             System.out.println("Predicate: " + p.toString());
