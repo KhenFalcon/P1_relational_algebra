@@ -328,8 +328,8 @@ public class RAImplTest {
         Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
         course_relation.loadData("test-tables/course_export.csv");
 
-        //Predicate p = new PredicateImpl(2, "=", Cell.val(course_relation.));
-        Relation theta_join = raImpl.join(instructor_relation, course_relation, null);
+        Predicate p = new PredicateImpl(2, "=", 6);
+        Relation theta_join = raImpl.join(instructor_relation, course_relation, p);
         theta_join.print();
         System.out.println(theta_join.getAttrs());
 
