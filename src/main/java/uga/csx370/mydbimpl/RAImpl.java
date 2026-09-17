@@ -1,5 +1,6 @@
 package uga.csx370.mydbimpl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,7 +43,7 @@ public class RAImpl implements RA {
             attrIndices[i] = rel.getAttrIndex(attrs.get(i));
 
         List<Type> relTypes = rel.getTypes();
-        List<Type> attrTypes = relTypes.subList(0, 0);
+        List<Type> attrTypes = new ArrayList<>();
         // --- read the next few comments backwards -----------------------------------------------
         for (int i = 0; i < attrs.size(); i++) {
             attrTypes.add( // ... and add only the selected types to attrTypes 
@@ -58,20 +59,22 @@ public class RAImpl implements RA {
                 .attributeTypes(attrTypes)
                 .build();
 
+        System.out.println("Projecting attributes: " + attrs);
+        System.out.println("Full relation attributes: " + rel.getAttrs());
+
         int size = rel.getSize(); // call method only once
         for(int i = 0; i < size; i++) {
             List<Cell> row = rel.getRow(i);
-            List<Cell> proj_row = row.subList(0, 0); // creates empty list
+            List<Cell> proj_row = new ArrayList<>(); // creates empty list
 
             // --- read the next few comments backwards -------------------------------------------
             for (int j = 0; j < attrs.size(); j++) {
-                proj_row.add( // ...and add the cell-data to proj_row
-                        row.get( // ...grab its cell using its index in rel
-                                attrIndices[j] // for each attribute selected to be projected...        
-                        )
-                );
+                int proj_cell_index = rel.getAttrIndex(attrs.get(j)); // grab the index of the projected attribute in rel...
+                Cell proj_cell = row.get(proj_cell_index); // ...grab the cell in row using that index
+                proj_row.add(proj_cell); // ...and add the cell-data to proj_row
             }
             // ------------------------------------------------------------------------------------
+            r.insert(proj_row);
         }
 
         return r;
