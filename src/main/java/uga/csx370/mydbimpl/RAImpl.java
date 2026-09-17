@@ -198,11 +198,8 @@ public class RAImpl implements RA {
             } // all rows of rel2
 
         } // outer for loop for row in rel1 -> combines specific row with all the rows in rel2
-
         
         return cartProd; // returns cartesian product
-
-
     }
 
     @Override
@@ -268,7 +265,6 @@ public class RAImpl implements RA {
         Relation natural_join = project(theta_join, natural_join_attrs); // natural join
 
         return natural_join;
-        
     }
 
     @Override
