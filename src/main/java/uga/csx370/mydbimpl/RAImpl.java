@@ -37,43 +37,35 @@ public class RAImpl implements RA {
         if(attrs == null || attrs.isEmpty())
             throw new IllegalArgumentException("Attribute list cannot be null or empty.");
 
-        // get a list of all the columns-numbers selected
-        int[] attrIndices = new int[attrs.size()];
-        for (int i = 0; i < attrs.size(); i++)
-            attrIndices[i] = rel.getAttrIndex(attrs.get(i));
-
+        // get the types of the projected attributes from the original relation
         List<Type> relTypes = rel.getTypes();
         List<Type> attrTypes = new ArrayList<>();
-        // --- read the next few comments backwards -----------------------------------------------
         for (int i = 0; i < attrs.size(); i++) {
-            attrTypes.add( // ... and add only the selected types to attrTypes 
-                    relTypes.get( // ... get its attribute-type from relTypes
-                            attrIndices[i] // for each attribute selected to be projected...
-                    )  
-            );
+            int attr_index = rel.getAttrIndex(attrs.get(i)); // for each attribute selected to be projected...
+            Type attr_type = relTypes.get(attr_index); // ... get its attribute-type from relTypes
+            attrTypes.add(attr_type); // ... and add only the selected types to attrTypes 
         }
-        // ----------------------------------------------------------------------------------------
 
+        // create a new relation to return as results
         Relation r = new RelationBuilder()
                 .attributeNames(attrs)
                 .attributeTypes(attrTypes)
                 .build();
 
-        System.out.println("Projecting attributes: " + attrs);
-        System.out.println("Full relation attributes: " + rel.getAttrs());
+        // Debugging output
+        // System.out.println("Projecting attributes: " + attrs);
+        // System.out.println("Full relation attributes: " + rel.getAttrs());
 
         int size = rel.getSize(); // call method only once
         for(int i = 0; i < size; i++) {
             List<Cell> row = rel.getRow(i);
             List<Cell> proj_row = new ArrayList<>(); // creates empty list
 
-            // --- read the next few comments backwards -------------------------------------------
             for (int j = 0; j < attrs.size(); j++) {
                 int proj_cell_index = rel.getAttrIndex(attrs.get(j)); // grab the index of the projected attribute in rel...
                 Cell proj_cell = row.get(proj_cell_index); // ...grab the cell in row using that index
                 proj_row.add(proj_cell); // ...and add the cell-data to proj_row
             }
-            // ------------------------------------------------------------------------------------
             r.insert(proj_row);
         }
 
