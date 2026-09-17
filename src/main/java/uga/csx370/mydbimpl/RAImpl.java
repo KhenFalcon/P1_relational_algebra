@@ -22,7 +22,7 @@ public class RAImpl implements RA {
                 .build();
 
         int size = rel.getSize(); // call method only once
-        for(int i = 0; i < size && r.getSize() < 51; i++) { // set hard max of 50 rows to be returned.
+        for(int i = 0; i < size; i++) { // set hard max of 50 rows to be returned.
             List<Cell> row = rel.getRow(i);
             if(p.check(row)) { // add the row to resultant if it passes the predicate's check
                 r.insert(row);
@@ -59,7 +59,7 @@ public class RAImpl implements RA {
                 .build();
 
         int size = rel.getSize(); // call method only once
-        for(int i = 0; i < size && r.getSize() < 51; i++) { // set hard max of 50 rows to be returned.
+        for(int i = 0; i < size; i++) {
             List<Cell> row = rel.getRow(i);
             List<Cell> proj_row = row.subList(0, 0); // creates empty list
 
