@@ -115,6 +115,8 @@ public class RAImplTest {
         );
 
         for(List<String> attr : attrLists) {
+            List<String> attrs_before_project = instructor_relation.getAttrs();
+            System.out.println(attrs_before_project);
             Relation result = raImpl.project(instructor_relation, attr);
             
             assertNotNull(result);
