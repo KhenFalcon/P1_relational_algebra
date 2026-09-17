@@ -163,9 +163,19 @@ public class RAImpl implements RA {
 
     @Override
     public Relation cartesianProduct(Relation rel1, Relation rel2) {
+        // TODO Auto-generated method stub
+        //throw new UnsupportedOperationException("Unimplemented method 'cartesianProduct'");
+        List<String> attrs_rel1_rename = new ArrayList<>();
+        List<String> attrs_rel2_rename = new ArrayList<>();
 
         List<String> rel1_attrs = rel1.getAttrs();
         List<String> rel2_attrs = rel2.getAttrs();
+
+        for (String attrs : rel1_attrs) {
+            if(rel2_attrs.contains(attrs)) {
+                throw new IllegalArgumentException("rel1 and rel2 have common attributes");
+            }
+        }
 
         for (String attrs : rel1_attrs) {
             if(rel2_attrs.contains(attrs)) {
@@ -198,7 +208,13 @@ public class RAImpl implements RA {
             } // all rows of rel2
 
         } // outer for loop for row in rel1 -> combines specific row with all the rows in rel2
-        
+
+        HashSet<String> attrs = new HashSet<>(attrs_combined);
+        if (attrs_combined.size() != attrs.size()) {
+            throw new IllegalArgumentException("rel1 and re12 have common attributes");
+        }
+
+
         return cartProd; // returns cartesian product
     }
 
@@ -270,6 +286,15 @@ public class RAImpl implements RA {
     @Override
     public Relation join(Relation rel1, Relation rel2, Predicate p) {
         // do cartProd first and then do theta join
+
+        List<String> rel1_attrs = rel1.getAttrs();
+        List<String> rel2_attrs = rel2.getAttrs(); 
+
+        for (String attr: rel1_attrs) {
+            if (rel2_attrs.contains(attr)) {
+                throw new IllegalArgumentException("rel1 and rel2 have common attributes");
+            }
+        }
 
         List<String> rel1_attrs = rel1.getAttrs();
         List<String> rel2_attrs = rel2.getAttrs(); 
