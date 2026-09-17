@@ -138,10 +138,17 @@ public class RAImpl implements RA {
         // TODO Auto-generated method stub
         //throw new UnsupportedOperationException("Unimplemented method 'rename'");
 
+        List<String> rel_attrs = rel.getAttrs(); // gets rel attributes
+        for (String attr: rel_attrs) {
+            
+        }
+
         Relation rename_rel = new RelationBuilder().attributeNames(renamedAttr).attributeTypes(rel.getTypes()).build();
-        
+        // constructs new relation based on given renamedAttr and infers same types from rel
+
         for (int i = 0; i < rel.getSize(); i++) {
             rename_rel.insert(rel.getRow(i));
+            // adds rows from rel to rename_rel
         }
 
         return rename_rel;
