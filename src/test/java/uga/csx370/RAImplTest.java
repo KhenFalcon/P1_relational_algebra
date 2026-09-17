@@ -337,4 +337,28 @@ public class RAImplTest {
 
 
     }
+
+    @Test
+    public void createCourseTable() {
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+        Relation project_title = raImpl.project(course_relation, List.of("title"));
+        project_title.print();
+    }
+
+    @Test 
+    public void createStudentTable() {
+        Relation students = new RelationBuilder()
+             .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
+             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
+            .build();
+        students.loadData("test-tables/student_export.csv");
+        students.print();
+    }
+
+
+
+
+
+
 }
