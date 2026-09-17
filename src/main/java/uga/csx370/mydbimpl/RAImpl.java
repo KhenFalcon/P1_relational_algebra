@@ -73,6 +73,7 @@ public class RAImpl implements RA {
                 );
             }
             // ------------------------------------------------------------------------------------
+            r.insert(proj_row); // adds rows to the new relation being built
         }
 
         return r;
@@ -214,36 +215,18 @@ public class RAImpl implements RA {
 
         List<String> common_attrs = new ArrayList<>(attrs_rel1); 
         common_attrs.retainAll(attrs_rel2); // gets common attributes from both rel1 and rel2 relations
+        System.out.println(common_attrs); // [dept_name]
 
         Relation cartProduct = cartesianProduct(rel1, rel2); // cartesian product between rel1 and rel2
         List<Integer> index_vals = new ArrayList<>(); // indexes of common attributes 
 
-  
-        int index = 0; // keeps track of common_attrs index -> default if only 1 common attribute 
-        for (int i = 0; i < common_attrs.size() *2; i++) {
-            if (i % 2 == 0) { // keep track of pairs
-                index_vals.add(i, cartProduct.getAttrIndex("rel1." + common_attrs.get(index)));
-                index_vals.add(i + 1, cartProduct.getAttrIndex("rel2." + common_attrs.get(index)));
-                index++; // increments index -> useful if common_attrs has length > 1
-            }
+        
+       index_vals.add(0, cartProduct.getAttrIndex("rel1." + common_attrs.get(0)));
+       index_vals.add(1, cartProduct.getAttrIndex("rel2." + common_attrs.get(0)));     
+       System.out.println(index_vals); // [2, 6]
 
-        }     
-
-        Predicate pred_natural_join = (row) -> {
-            for (int i = 0; i < index_vals.size() - 1; i++) {
-                if (i % 2 == 0) {
-                    if (!row.get(index_vals.get(i)).equals(row.get(index_vals.get(i + 1)))) {
-                        return false;
-                    }
-                    // done to be able to access the pairs, i.e. rel1.attr and rel2.attr 
-                }
-            } // checks if cell value at common columns equal one another 
-
-            return true;
-        };
-
-
-        Relation theta_join = select(cartProduct, pred_natural_join); 
+        Predicate p = new PredicateImpl(index_vals.get(0), "=", index_vals.get(1));
+        Relation theta_join = select(cartProduct, p); 
         theta_join.print();
         
         List<String> tj_attrs = theta_join.getAttrs();
@@ -251,6 +234,7 @@ public class RAImpl implements RA {
         for (int i = 0; i < tj_attrs.size(); i ++) {
             attrs_index.add(i); // gives indices 0 to n-1
         }
+        System.out.println(attrs_index); //[0,1,2,3,4,5,6,7]
 
         List<Integer> odd_ins = new ArrayList<>();
 
@@ -260,9 +244,11 @@ public class RAImpl implements RA {
             }
             //gets odd value indicies from index_vals
         }
+        System.out.println(odd_ins); // [6]
 
         List<Integer> unique_inds = new ArrayList<>(attrs_index);
         unique_inds.removeAll(odd_ins); // removes common rel2 attrs 
+        System.out.println(unique_inds); //[0,1,2,3,4,5,7]
 
         List<String> natural_join_attrs = new ArrayList<>(); // new attrs for natural join merging common attrs
 
@@ -270,6 +256,8 @@ public class RAImpl implements RA {
             natural_join_attrs.add(i, tj_attrs.get(unique_inds.get(i)));
             // gets attribute names 
         }
+        System.out.println(natural_join_attrs);
+
         Relation natural_join = project(theta_join, natural_join_attrs); // natural join
 
         return natural_join;
