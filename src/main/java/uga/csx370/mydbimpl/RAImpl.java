@@ -214,13 +214,14 @@ public class RAImpl implements RA {
         List<Integer> index_vals = new ArrayList<>(); // indexes of common attributes 
 
         
-       index_vals.add(0, cartProduct.getAttrIndex("rel1." + common_attrs.get(0)));
-       index_vals.add(1, cartProduct.getAttrIndex("rel2." + common_attrs.get(0)));     
-       System.out.println(index_vals); // [2, 6]
+        index_vals.add(0, cartProduct.getAttrIndex("rel1." + common_attrs.get(0)));
+        index_vals.add(1, cartProduct.getAttrIndex("rel2." + common_attrs.get(0)));     
+        System.out.println(index_vals); // [2, 6]
 
         Predicate p = new PredicateImpl(index_vals.get(0), "=", index_vals.get(1));
         Relation theta_join = select(cartProduct, p); 
         theta_join.print();
+
         
         List<String> tj_attrs = theta_join.getAttrs();
         List<Integer> attrs_index = new ArrayList<>();
