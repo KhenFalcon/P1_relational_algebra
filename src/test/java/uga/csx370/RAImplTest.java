@@ -357,6 +357,35 @@ public class RAImplTest {
         students.print();
     }
 
+    @Test
+    public void checkExceptionRename() {
+        //Relation throw_excep_rename = raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("avg_sal"));
+        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("avg_sal")));
+        System.out.println(ex1.getMessage());
+        IllegalArgumentException ex2 = assertThrows(IllegalArgumentException.class, () -> raImpl.rename(instructor_relation, List.of("ID", "name", "wowzers", "salary"), List.of("rel1.id", "rel1.name", "rel1.dept_name", "rel1.salary")));
+        System.out.println(ex2.getMessage());
+    }
+
+    @Test
+    public void checkExceptionCartesianProduct() {
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+
+        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.cartesianProduct(instructor_relation, course_relation));
+        System.out.println(ex1.getMessage());
+
+    }
+
+    @Test
+    public void checkExceptionThetaJoin() {
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+        Predicate p = new PredicateImpl(2, "=", 6);
+        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.join(instructor_relation, course_relation, p));
+        System.out.println(ex1.getMessage());
+    }
+
+
 
 
 
