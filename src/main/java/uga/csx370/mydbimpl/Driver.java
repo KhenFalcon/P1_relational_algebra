@@ -8,14 +8,12 @@ package uga.csx370.mydbimpl;
 
 import java.util.List;
 
-import uga.csx370.mydb.Relation;
-import uga.csx370.mydb.RelationBuilder;
-import uga.csx370.mydb.Type;
-
-// Sasha import
 import uga.csx370.mydb.Cell;
 import uga.csx370.mydb.Predicate;
 import uga.csx370.mydb.RA;
+import uga.csx370.mydb.Relation;
+import uga.csx370.mydb.RelationBuilder;
+import uga.csx370.mydb.Type;
 
 public class Driver {
     
@@ -91,6 +89,7 @@ public class Driver {
             List.of("student_dept")
         );
         Relation studentTakes = ra.join(renamedStudents, takes);
+
         Relation studentTakesCourses = ra.join(studentTakes, courses);
 
         Predicate csPredicate = new PredicateImpl(
@@ -114,11 +113,11 @@ public class Driver {
             csCourses,
             coursePredicate
         );
-        
+
         Predicate gradePredicate = new PredicateImpl(
             8,
             "=",
-            Cell.val("A")
+            Cell.val("A ")
         );
         
         Relation gradeA = ra.select(
