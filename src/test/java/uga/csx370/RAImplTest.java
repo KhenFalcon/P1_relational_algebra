@@ -62,9 +62,32 @@ public class RAImplTest {
     public void validInstantiation() {
         raImpl = new RAImpl();
         assertNotNull(raImpl);
-
     }
 
+    @Test
+    public void validInstructorRelation() {
+        assertNotNull(instructor_relation);
+        assertEquals(4, instructor_relation.getAttrs().size());
+        assertEquals(4, instructor_relation.getTypes().size());
+        assertEquals(50, instructor_relation.getSize());
+
+        Cell firstCell = instructor_relation.getRow(0).get(0);
+        assertNotNull(firstCell);
+        assertEquals(Type.INTEGER, firstCell.getType());
+    }
+
+    @Test
+    public void validStudentRelation() {
+        assertNotNull(student_relation);
+        assertEquals(4, student_relation.getAttrs().size());
+        assertEquals(4, student_relation.getTypes().size());
+        assertEquals(2000, student_relation.getSize());
+
+        Cell firstCell = instructor_relation.getRow(0).get(0);
+        assertNotNull(firstCell);
+        assertEquals(Type.INTEGER, firstCell.getType());
+    }
+    
     @Test
     public void testSelect() {
         // --- Good Tests -------------------------------------------------------------------------
@@ -287,36 +310,14 @@ public class RAImplTest {
             assertFalse(br2.getSize() < 0);
 
             // confirm that union of the two relations will fail
-            assertThrows(IllegalArgumentException.class, () -> raImpl.union(br1, br2));
+            assertThrows(IllegalArgumentException.class, () -> raImpl.intersect(br1, br2));
         }
     }
 
-    @Test
-    public void validInstructorRelation() {
-        assertNotNull(instructor_relation);
-        assertEquals(4, instructor_relation.getAttrs().size());
-        assertEquals(4, instructor_relation.getTypes().size());
-        assertEquals(50, instructor_relation.getSize());
-
-        Cell firstCell = instructor_relation.getRow(0).get(0);
-        assertNotNull(firstCell);
-        assertEquals(Type.INTEGER, firstCell.getType());
-    }
-
-    @Test
-    public void validStudentRelation() {
-        assertNotNull(student_relation);
-        assertEquals(4, student_relation.getAttrs().size());
-        assertEquals(4, student_relation.getTypes().size());
-        assertEquals(2000, student_relation.getSize());
-
-        Cell firstCell = instructor_relation.getRow(0).get(0);
-        assertNotNull(firstCell);
-        assertEquals(Type.INTEGER, firstCell.getType());
-    } 
 
     @Test
     public void testDiff() {
+        // --- Good Tests -------------------------------------------------------------------------
         Predicate[] inversePredicates = {
                 new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
                 new PredicateImpl(2, "!=", Cell.val("Athletics")), // department name is not Athletics
@@ -353,18 +354,28 @@ public class RAImplTest {
             assertTrue(diff1.getSize() <= instructor_relation.getSize());
             assertTrue(diff2.getSize() <= instructor_relation.getSize());
         }
-    }
-    
-    @Test
-    public void checkExceptionDiff() {
+        
+        // --- Bad Tests --------------------------------------------------------------------------
+
         Relation[] incompatableRelations = {
-            student_relation,
-            raImpl.project(instructor_relation, List.of("ID", "dept_name"))
+                instructor_relation,
+                raImpl.project(instructor_relation, List.of("ID", "dept_name")), // fewer, matching attributes, matching entries
+                raImpl.project(instructor_relation, List.of("ID", "salary")), // same number, but mismatching attributes, matching entries 
+                raImpl.project(instructor_relation, List.of("name", "salary")), // same number, but wrong attributes 
+                instructor_relation, // more, matching attributes, matching entries
+                student_relation // completely different table
         };
 
-        for (Relation r : incompatableRelations) {
+        for (int i = 0; i < incompatableRelations.length - 1; i++) {
+            Relation ir1 = incompatableRelations[i];
+            Relation ir2 = incompatableRelations[i + 1];
+
+            assertNotNull(ir1);
+            assertNotNull(ir2);
+    
+
             assertThrows(Exception.class, () -> {
-                raImpl.diff(instructor_relation, r);
+                raImpl.diff(ir1, ir2);
             });
         }
     }
