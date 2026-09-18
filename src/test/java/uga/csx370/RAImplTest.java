@@ -33,6 +33,7 @@ public class RAImplTest {
 
     private RAImpl raImpl;
     private Relation instructor_relation;
+    private Relation student_relation;
 
     @BeforeAll
     public void setup() {
@@ -45,6 +46,13 @@ public class RAImplTest {
             .build();
         instructor_relation.loadData("test-tables/instructor.csv");
         validInstructorRelation();
+
+        student_relation = new RelationBuilder()
+             .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
+             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
+            .build();
+        student_relation.loadData("test-tables/student.csv");
+        validStudentRelation();
     }
 
     @Test
@@ -68,7 +76,7 @@ public class RAImplTest {
             new PredicateImpl(1, "!=", Cell.val("Mird")), // name is not Mird
             new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
             new PredicateImpl(0, ">", Cell.val(60000)), // ID is greater than 60000
-            new PredicateImpl(0, "*", Cell.val(0)), // wildcard operator, should return all rows
+            new PredicateImpl(0, "*", 0), // wildcard operator, should return all rows
         };
 
         for (Predicate p : predicates) {
@@ -120,8 +128,7 @@ public class RAImplTest {
             Relation result = raImpl.project(instructor_relation, attr);
             
             assertNotNull(result);
-            assertTrue(result.getSize() <= 50);
-            assertFalse(result.getSize() < 0);
+            assertTrue(result.getSize() == 50);
             assertEquals(attr.size(), result.getAttrs().size());
             assertEquals(attr.size(), result.getTypes().size());
 
@@ -290,7 +297,65 @@ public class RAImplTest {
         assertEquals(Type.INTEGER, firstCell.getType());
     }
 
+    @Test
+    public void validStudentRelation() {
 
+    } 
+
+    @Test
+    public void testDiff() {
+        Predicate[] inversePredicates = {
+                new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
+                new PredicateImpl(2, "!=", Cell.val("Athletics")), // department name is not Athletics
+                new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
+                new PredicateImpl(3, "<=", Cell.val(100000.0)), // salary is less than or equal to 100000.0
+                new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
+                new PredicateImpl(0, ">=", Cell.val(100)), // ID is greater than or equal to 100 (should return all rows)
+                new PredicateImpl(1, "=", Cell.val("Mird")), // name is Mird
+                new PredicateImpl(1, "!=", Cell.val("Mird")) // name is not Mird
+        };
+
+        for (int i = 0; i < inversePredicates.length && i < inversePredicates.length - 1; i += 2) {
+            Relation r1 = raImpl.select(instructor_relation, inversePredicates[i]);
+            Relation r2 = raImpl.select(instructor_relation, inversePredicates[i + 1]); // should always be the inverse of r1
+
+            Relation diff1 = raImpl.diff(instructor_relation, r1);
+            Relation diff2 = raImpl.diff(instructor_relation, r2); // should always be tihe inverse of diff1
+
+            // NOTE: assertEquals doesn't work for relation-type objects
+
+            // assert size comparisons
+            assertTrue(diff1.getSize() == r2.getSize());
+            assertTrue(diff2.getSize() == r1.getSize());
+            assertTrue(r1.getSize() == instructor_relation.getSize() - diff1.getSize());
+            assertTrue(r2.getSize() == instructor_relation.getSize() - diff2.getSize());
+
+            assertTrue(r1.getSize() >= 0);
+            assertTrue(r2.getSize() >= 0);
+            assertTrue(diff1.getSize() >= 0);
+            assertTrue(diff2.getSize() >= 0);
+
+            assertTrue(r1.getSize() <= instructor_relation.getSize());
+            assertTrue(r2.getSize() <= instructor_relation.getSize());
+            assertTrue(diff1.getSize() <= instructor_relation.getSize());
+            assertTrue(diff2.getSize() <= instructor_relation.getSize());
+        }
+    }
+    
+    @Test
+    public void checkExceptionDiff() {
+        Relation[] incompatableRelations = {
+            student_relation,
+            raImpl.project(instructor_relation, List.of("ID", "dept_name")),
+            // raImpl.cartesianProduct(instructor_relation, student_relation)
+        };
+
+        for (Relation r : incompatableRelations) {
+            assertThrows(Exception.class, () -> {
+                raImpl.diff(instructor_relation, r);
+            });
+        }
+    }
 
     @Test
     public void testRename() {
