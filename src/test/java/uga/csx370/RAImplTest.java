@@ -356,9 +356,6 @@ public class RAImplTest {
         theta_join2.print();
         System.out.println(instructor_relation.getAttrs());
         System.out.println(theta_join2.getAttrs());
-
-
-
     }
 
     @Test
@@ -395,7 +392,6 @@ public class RAImplTest {
 
         IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.cartesianProduct(instructor_relation, course_relation));
         System.out.println(ex1.getMessage());
-
     }
 
     @Test

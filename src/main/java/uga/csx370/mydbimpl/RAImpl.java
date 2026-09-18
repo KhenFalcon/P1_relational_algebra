@@ -170,8 +170,6 @@ public class RAImpl implements RA {
 
     @Override
     public Relation rename(Relation rel, List<String> origAttr, List<String> renamedAttr) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'rename'");
 
         List<String> rel_attrs = rel.getAttrs(); // gets rel attributes
         if (origAttr.size() != renamedAttr.size()) {
@@ -210,8 +208,6 @@ public class RAImpl implements RA {
 
     @Override
     public Relation cartesianProduct(Relation rel1, Relation rel2) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'cartesianProduct'");
 
         List<String> rel1_attrs = rel1.getAttrs();
         List<String> rel2_attrs = rel2.getAttrs();
@@ -249,16 +245,11 @@ public class RAImpl implements RA {
 
         } // outer for loop for row in rel1 -> combines specific row with all the rows in rel2
 
-        
         return cartProd; // returns cartesian product
-
-
     }
 
     @Override
     public Relation join(Relation rel1, Relation rel2) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'join'");
 
         List<String> attrs_rel1 = rel1.getAttrs(); // gets rel1 attributes
         List<String> attrs_rel2 = rel2.getAttrs(); // gets rel2 attributes
@@ -277,7 +268,6 @@ public class RAImpl implements RA {
         Relation cartProduct = cartesianProduct(rel1, rel2_new); // cartesian product between rel1 and rel2
         List<Integer> index_vals = new ArrayList<>(); // indexes of common attributes 
 
-        
         index_vals.add(0, cartProduct.getAttrIndex(common_attrs.get(0)));
         index_vals.add(1, cartProduct.getAttrIndex("rel2." + common_attrs.get(0)));     
 
@@ -314,16 +304,12 @@ public class RAImpl implements RA {
         Relation natural_join = project(theta_join, natural_join_attrs); // natural join
 
         return natural_join;
-        
     }
 
     @Override
     public Relation join(Relation rel1, Relation rel2, Predicate p) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'join'");
 
         // do cartProd first and then do theta join
-
         List<String> rel1_attrs = rel1.getAttrs();
         List<String> rel2_attrs = rel2.getAttrs(); 
 
