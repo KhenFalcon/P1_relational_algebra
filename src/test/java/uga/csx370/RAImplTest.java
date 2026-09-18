@@ -314,7 +314,6 @@ public class RAImplTest {
         }
     }
 
-
     @Test
     public void testDiff() {
         // --- Good Tests -------------------------------------------------------------------------
@@ -382,22 +381,65 @@ public class RAImplTest {
 
     @Test
     public void testRename() {
-        Relation rel_rename = raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("rel1_ID", "rel1_name", "rel1_dept_name", "rel1_salary"));
-        rel_rename.print(); // renaming all 4 columns
-        System.out.println(rel_rename.getAttrs());
+        // --- Good Tests -------------------------------------------------------------------------
+        List<List<String>> renameLists = List.of(
+            List.of("ID", "name", "dept_name", "salary"), 
+            List.of("rel1_ID", "rel1_name", "rel1_dept_name", "rel1_salary"),
+                            
+            List.of("ID", "name"),
+            List.of("rel1.ID", "rel1.name"),
+                            
+            List.of("salary"), 
+            List.of("rel1.salary"),
+                    
+            List.of("dept_name"), 
+            List.of("re1.dept_name")
+        );
 
-        Relation rel_rename2 = raImpl.rename(instructor_relation, List.of("ID", "name"), List.of("rel1.ID", "rel1.name"));
-        rel_rename2.print(); // renaming only first two columns
-        System.out.println(rel_rename2.getAttrs());
+        for (int i = 0; i < renameLists.size() && i < renameLists.size() - 1; i += 2) {
+            List<String> currNames = renameLists.get(i);
+            List<String> newNames = renameLists.get(i + 1);
 
-        Relation rel_rename3 = raImpl.rename(instructor_relation, List.of("salary"), List.of("rel1.salary"));
-        rel_rename3.print(); // renaming last column
-        System.out.println(rel_rename3.getAttrs());
+            assertTrue(currNames.size() == newNames.size());
+            assertTrue(instructor_relation.getAttrs().containsAll(currNames));
+            newNames.forEach(newName -> assertFalse(instructor_relation.getAttrs().contains(newName)));
 
-        Relation rel_rename4 = raImpl.rename(instructor_relation, List.of("dept_name"), List.of("re1.dept_name"));
-        rel_rename4.print();
-        System.out.println(rel_rename4.getAttrs());
+            Relation renamedRelation = raImpl.rename(instructor_relation, currNames, newNames);
 
+            assertTrue(renamedRelation.getAttrs().containsAll(newNames));
+            currNames.forEach(currName -> assertFalse(renamedRelation.getAttrs().contains(currName)));
+
+            for (int j = 0; j < currNames.size(); j++)
+                assertTrue(instructor_relation.getAttrIndex(currNames.get(j)) == renamedRelation
+                        .getAttrIndex(newNames.get(j)));
+
+            renamedRelation.print();
+        }
+        
+        // --- Bad Tests --------------------------------------------------------------------------
+        List<List<String>> badLists = List.of(
+            // empty lists
+            // List.of(), 
+            // List.of(),
+            // mismatchcing lengths (extra rename)
+            List.of("ID"),
+            List.of("rel1.ID", "rel1.name"),
+            // mismatching lengths (extra name)
+            List.of("dept_name", "salary"), 
+            List.of("re1.dept_name"),
+            // non-existant attribute
+            List.of("YRALAS"), 
+            List.of("rel1.salary")
+        );
+
+        for (int i = 0; i < badLists.size() && i < badLists.size() - 1; i += 2) {
+            List<String> currNames = badLists.get(i);
+            List<String> newNames = badLists.get(i + 1);
+
+            assertThrows(Exception.class, () -> {
+                raImpl.rename(instructor_relation, currNames, newNames);
+            });
+        }
     }
 
     @Test
@@ -462,15 +504,6 @@ public class RAImplTest {
             .build();
         students.loadData("test-tables/student.csv");
         students.print();
-    }
-
-    @Test
-    public void checkExceptionRename() {
-        //Relation throw_excep_rename = raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("avg_sal"));
-        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("avg_sal")));
-        System.out.println(ex1.getMessage());
-        IllegalArgumentException ex2 = assertThrows(IllegalArgumentException.class, () -> raImpl.rename(instructor_relation, List.of("ID", "name", "wowzers", "salary"), List.of("rel1.id", "rel1.name", "rel1.dept_name", "rel1.salary")));
-        System.out.println(ex2.getMessage());
     }
 
     @Test

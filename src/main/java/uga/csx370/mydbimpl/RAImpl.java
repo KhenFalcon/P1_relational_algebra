@@ -180,17 +180,21 @@ public class RAImpl implements RA {
     public Relation rename(Relation rel, List<String> origAttr, List<String> renamedAttr) {
 
         List<String> rel_attrs = rel.getAttrs(); // gets rel attributes
-        if (origAttr.size() != renamedAttr.size()) {
+       
+        // checking if attr lists are not null or empty, if not, it throws an exception
+        if (origAttr == null || origAttr.isEmpty())
+            throw new IllegalArgumentException("Attribute list, origAttr, cannot be null or empty");
+        if (renamedAttr == null || renamedAttr.isEmpty())
+            throw new IllegalArgumentException("Attribute list, renamedAttr, cannot be null or empty");
+
+        // checking if attr lists are of equal size, if not, it throws an exception
+         if (origAttr.size() != renamedAttr.size())
             throw new IllegalArgumentException("Argument counts do not match for origAttr and renamedAttr");
-        }
-        for (String attr: origAttr) {
-            if (!rel_attrs.contains(attr)) {
-                throw new IllegalArgumentException("Attribute in origAttr is not in rel");
-            }
-            // checking if attr in origAttr is in rel_attrs, if not, it throws exception
 
-        }
-
+        // checking if attr in origAttr is in rel_attrs, if not, it throws an exception
+        if (!rel_attrs.containsAll(origAttr))
+            throw new IllegalArgumentException("Attribute in origAttr is not in rel");
+            
         List<String> new_attrs = new ArrayList<>(rel_attrs); // list built to contain new attribute names
         for (int i = 0; i < origAttr.size(); i ++) { // looping through original attributes
             String oldColumnName = origAttr.get(i); // gets old column name
@@ -211,7 +215,6 @@ public class RAImpl implements RA {
         }
 
         return rename_rel;
-
     }
 
     @Override
