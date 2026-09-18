@@ -115,6 +115,8 @@ public class RAImplTest {
         );
 
         for(List<String> attr : attrLists) {
+            List<String> attrs_before_project = instructor_relation.getAttrs();
+            System.out.println(attrs_before_project);
             Relation result = raImpl.project(instructor_relation, attr);
             
             assertNotNull(result);
@@ -287,4 +289,109 @@ public class RAImplTest {
         assertNotNull(firstCell);
         assertEquals(Type.INTEGER, firstCell.getType());
     }
+
+
+
+    @Test
+    public void testRename() {
+        Relation rel_rename = raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("rel1_ID", "rel1_name", "rel1_dept_name", "rel1_salary"));
+        rel_rename.print();
+        System.out.println(rel_rename.getAttrs());
+
+    }
+
+    @Test
+    public void testCartesianProduct() {
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+        Relation cartesianProduct = raImpl.cartesianProduct(instructor_relation, course_relation);
+        cartesianProduct.print();
+        System.out.println(instructor_relation.getAttrs());
+        System.out.println(course_relation.getAttrs());
+        System.out.println(instructor_relation.getTypes());
+        System.out.println(course_relation.getTypes());
+        System.out.println(cartesianProduct.getAttrs());
+        System.out.println(cartesianProduct.getTypes());
+    }
+
+    @Test
+    public void testNaturalJoin() {
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+        Relation natural_join = raImpl.join(instructor_relation, course_relation);
+        natural_join.print();
+        System.out.println(natural_join.getAttrs());
+
+    }
+
+    @Test
+    public void testThetaJoin() {
+        //Cell firstCell = instructor_relation.getRow(0).get(0);
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+
+        Relation rename_course = raImpl.rename(course_relation, List.of("course_id", "title", "dept_name", "credits"), List.of("rel2.course_id", "rel2.title", "rel2.dept_name", "rel2.credits"));
+        // needed to rename as the exception is done on raw attributes which do have common values
+        Predicate p = new PredicateImpl(2, "=", 6);
+        Relation theta_join = raImpl.join(instructor_relation, rename_course, p);
+        theta_join.print();
+        System.out.println(instructor_relation.getAttrs());
+        System.out.println(theta_join.getAttrs());
+
+
+
+    }
+
+    @Test
+    public void createCourseTable() {
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+        Relation project_title = raImpl.project(course_relation, List.of("title"));
+        project_title.print();
+    }
+
+    @Test 
+    public void createStudentTable() {
+        Relation students = new RelationBuilder()
+             .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
+             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
+            .build();
+        students.loadData("test-tables/student_export.csv");
+        students.print();
+    }
+
+    @Test
+    public void checkExceptionRename() {
+        //Relation throw_excep_rename = raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("avg_sal"));
+        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("avg_sal")));
+        System.out.println(ex1.getMessage());
+        IllegalArgumentException ex2 = assertThrows(IllegalArgumentException.class, () -> raImpl.rename(instructor_relation, List.of("ID", "name", "wowzers", "salary"), List.of("rel1.id", "rel1.name", "rel1.dept_name", "rel1.salary")));
+        System.out.println(ex2.getMessage());
+    }
+
+    @Test
+    public void checkExceptionCartesianProduct() {
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+
+        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.cartesianProduct(instructor_relation, course_relation));
+        System.out.println(ex1.getMessage());
+
+    }
+
+    @Test
+    public void checkExceptionThetaJoin() {
+        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
+        course_relation.loadData("test-tables/course_export.csv");
+        Predicate p = new PredicateImpl(2, "=", 6);
+        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.join(instructor_relation, course_relation, p));
+        System.out.println(ex1.getMessage());
+    }
+
+
+
+
+
+
+
 }
