@@ -230,7 +230,6 @@ public class RAImpl implements RA {
 
         List<String> common_attrs = new ArrayList<>(attrs_rel1); 
         common_attrs.retainAll(attrs_rel2); // gets common attributes from both rel1 and rel2 relations
-        System.out.println(common_attrs); // [dept_name]
 
        List<String> attrs_rel2_rename = new ArrayList<>();
        for (String attr : common_attrs) { // loops through common elements 
@@ -246,7 +245,6 @@ public class RAImpl implements RA {
         
         index_vals.add(0, cartProduct.getAttrIndex(common_attrs.get(0)));
         index_vals.add(1, cartProduct.getAttrIndex("rel2." + common_attrs.get(0)));     
-        System.out.println(index_vals); // [2, 6]
 
         Predicate p = new PredicateImpl(index_vals.get(0), "=", index_vals.get(1));
         Relation theta_join = select(cartProduct, p); 
@@ -258,7 +256,6 @@ public class RAImpl implements RA {
         for (int i = 0; i < tj_attrs.size(); i ++) {
             attrs_index.add(i); // gives indices 0 to n-1
         }
-        System.out.println(attrs_index); //[0,1,2,3,4,5,6,7]
 
         List<Integer> odd_ins = new ArrayList<>();
 
@@ -268,11 +265,9 @@ public class RAImpl implements RA {
             }
             //gets odd value indicies from index_vals
         }
-        System.out.println(odd_ins); // [6]
 
         List<Integer> unique_inds = new ArrayList<>(attrs_index);
         unique_inds.removeAll(odd_ins); // removes common rel2 attrs 
-        System.out.println(unique_inds); //[0,1,2,3,4,5,7]
 
         List<String> natural_join_attrs = new ArrayList<>(); // new attrs for natural join merging common attrs
 
@@ -280,7 +275,6 @@ public class RAImpl implements RA {
             natural_join_attrs.add(i, tj_attrs.get(unique_inds.get(i)));
             // gets attribute names 
         }
-        System.out.println(natural_join_attrs);
 
         Relation natural_join = project(theta_join, natural_join_attrs); // natural join
 
