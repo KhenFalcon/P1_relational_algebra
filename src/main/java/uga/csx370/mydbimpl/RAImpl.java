@@ -163,10 +163,6 @@ public class RAImpl implements RA {
 
     @Override
     public Relation cartesianProduct(Relation rel1, Relation rel2) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'cartesianProduct'");
-        //List<String> attrs_rel1_rename = new ArrayList<>();
-        //List<String> attrs_rel2_rename = new ArrayList<>();
 
         List<String> rel1_attrs = rel1.getAttrs();
         List<String> rel2_attrs = rel2.getAttrs();
@@ -177,25 +173,8 @@ public class RAImpl implements RA {
             }
         }
         
-        /* 
-        for (String attrs : rel1.getAttrs()) {
-            String rel1_rename = "rel1." + attrs; // adds prefix to specifc attribute
-            attrs_rel1_rename.add(rel1_rename); // adds the prefixed attribute to the ArrayList of renamed attributes for rel1
-        } // for loop to add prefix 'rel1.' to each attribute in order to have unique column names
-        
-        for (String attrs : rel2.getAttrs()) {
-            String rel2_rename = "rel2." + attrs; // adds prefix to each attribute
-            attrs_rel2_rename.add(rel2_rename); // adds prefixed attributes to ArrayList of renamed attributes for rel2
-        } // for loop to rename attributes in rel2 
-        */
-
-        /* 
-        List<String> attrs_combined = new ArrayList<>(attrs_rel1_rename);
-        attrs_combined.addAll(attrs_rel2_rename);
-        System.out.println(attrs_combined); // ArrayList of combined attributes to make new relation
-        */
-       List<String> attrs_combined = new ArrayList<>(rel1_attrs);
-       attrs_combined.addAll(rel2_attrs);
+        List<String> attrs_combined = new ArrayList<>(rel1_attrs);
+        attrs_combined.addAll(rel2_attrs);
 
         List<Type> attrs_types_rel1 = rel1.getTypes();
         List<Type> attrs_types_rel2 = rel2.getTypes();
