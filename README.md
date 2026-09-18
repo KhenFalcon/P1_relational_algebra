@@ -15,7 +15,7 @@ This project is meant to implement the RAImpl class and demonstrate understandin
 This Project's GitHub Repository: https://github.com/KhenFalcon/P1_relational_algebra
 
 > [!NOTE] Disclaimer for Testing:
-> The RA interface specifically instructs for an exception to be thrown when combining relations with matching attribute names. This specifically (though not exclusively) arises when using the cartesianProduct() and join() methods, which are originally designed to handle this case. To abide by the given instructions, the aforementioned methods (implemented in `RAImpl.java`) do not have the capability of reconciling duplicate attribute names. Please keep this in mind when using/testing these methods.
+> The RA interface specifically instructs for an exception to be thrown when combining relations with matching attribute names. This specifically (though not exclusively) arises when using the cartesianProduct() and join(predicate) methods, which are originally designed to handle this case. To abide by the given instructions, the aforementioned methods (implemented in `RAImpl.java`) do not have the capability of reconciling duplicate attribute names. Please keep this in mind when using/testing these methods.
 
 ## Team Members' Contributions
 

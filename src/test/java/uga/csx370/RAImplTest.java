@@ -164,7 +164,6 @@ public class RAImplTest {
                 new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
                 new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
                 new PredicateImpl(1, "=", Cell.val("Mird")), // name is Mird
-                new PredicateImpl(1, "!=", Cell.val("Mird")), // name is not Mird
                 new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
                 new PredicateImpl(0, ">", Cell.val(60000)), // ID is greater than 60000
                 new PredicateImpl(0, "*", Cell.val(0)), // wildcard operator, should return all rows
@@ -192,35 +191,38 @@ public class RAImplTest {
             assertTrue(unionResult.getSize() >= predicateResult2.getSize());
             assertTrue(unionResult.getSize() <= predicateResult1.getSize() + predicateResult2.getSize());
 
-            System.out.printf("Union relation of predicates %d & %d: ", i, i + 1);
+            System.out.printf("Union relation of predicates %d & %d: \n", i, i + 1);
+            System.out.printf("\t%s \n\t%s\n", predicate1.toString(), predicate2.toString());
             unionResult.print();
             System.out.println();
         }
 
         // Invalid Tests
 
-        // Different Arity
-        Relation projRel1 = raImpl.project(instructor_relation, List.of("ID", "name"));
-        Relation projRel2 = raImpl.project(instructor_relation, List.of("ID", "name", "salary"));
+        Relation[] badRelations = {
+            raImpl.project(instructor_relation, List.of("ID", "name")),
+            raImpl.project(instructor_relation, List.of("ID", "name", "salary")), // additional attribute
+            raImpl.project(instructor_relation, List.of("ID", "name")), // missing attribute
+            raImpl.project(instructor_relation, List.of("name", "salary")), // partial mismatch (incl. type mismatch)
+            raImpl.project(instructor_relation, List.of("ID", "dept_name")) // complete mismatch (incl. type mismatch)
+        };
 
-        assertNotNull(projRel1);
-        assertTrue(projRel1.getSize() <= 50);
-        assertFalse(projRel1.getSize() < 0);
+        for (int i = 0; i < badRelations.length - 1; i++) {
+            Relation br1 = badRelations[i];
+            Relation br2 = badRelations[i + 1];
 
-        assertNotNull(projRel2);
-        assertTrue(projRel2.getSize() <= 50);
-        assertFalse(projRel2.getSize() < 0);
+            // test that the relations are not flawed on their own
+            assertNotNull(br1);
+            assertTrue(br1.getSize() <= 50);
+            assertFalse(br1.getSize() < 0);
+            
+            assertNotNull(br2);
+            assertTrue(br2.getSize() <= 50);
+            assertFalse(br2.getSize() < 0);
 
-        assertThrows(IllegalArgumentException.class, () -> raImpl.union(projRel1, projRel2));
-
-        // Different Attribute Types
-        Relation projRel3 = raImpl.project(instructor_relation, List.of("dept_name", "salary"));
-
-        assertNotNull(projRel3);
-        assertTrue(projRel3.getSize() <= 50);
-        assertFalse(projRel3.getSize() < 0);
-
-        assertThrows(IllegalArgumentException.class, () -> raImpl.union(projRel1, projRel3));
+            // confirm that union of the two relations will fail
+            assertThrows(IllegalArgumentException.class, () -> raImpl.union(br1, br2));
+        }
     }
 
     @Test
@@ -232,8 +234,8 @@ public class RAImplTest {
                 new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
                 new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
                 new PredicateImpl(1, "!=", Cell.val("Mird")), // name is not Mird
-                new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
                 new PredicateImpl(0, ">", Cell.val(60000)), // ID is greater than 60000
+                new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
                 new PredicateImpl(0, "*", Cell.val(0)), // wildcard operator, should return all rows
         };
 
@@ -254,7 +256,8 @@ public class RAImplTest {
 
             Relation intersectResult = raImpl.intersect(predicateResult1, predicateResult2);
 
-            System.out.printf("Intersect relation of predicates %d & %d: ", i, i + 1);
+            System.out.printf("Intersect relation of predicates %d & %d: \n", i, i + 1);
+            System.out.printf("\t%s \n\t%s\n", predicate1.toString(), predicate2.toString());
             intersectResult.print();
             System.out.println();
         }
@@ -262,27 +265,30 @@ public class RAImplTest {
         // Invalid Tests
 
         // Different Arity
-        Relation projRel1 = raImpl.project(instructor_relation, List.of("ID", "name"));
-        Relation projRel2 = raImpl.project(instructor_relation, List.of("ID", "name", "salary"));
+        Relation[] badRelations = {
+            raImpl.project(instructor_relation, List.of("ID", "name")),
+            raImpl.project(instructor_relation, List.of("ID", "name", "salary")), // additional attribute
+            raImpl.project(instructor_relation, List.of("ID", "name")), // missing attribute
+            raImpl.project(instructor_relation, List.of("name", "salary")), // partial mismatch (incl. type mismatch)
+            raImpl.project(instructor_relation, List.of("ID", "dept_name")) // complete mismatch (incl. type mismatch)
+        };
 
-        assertNotNull(projRel1);
-        assertTrue(projRel1.getSize() <= 50);
-        assertFalse(projRel1.getSize() < 0);
+        for (int i = 0; i < badRelations.length - 1; i++) {
+            Relation br1 = badRelations[i];
+            Relation br2 = badRelations[i + 1];
 
-        assertNotNull(projRel2);
-        assertTrue(projRel2.getSize() <= 50);
-        assertFalse(projRel2.getSize() < 0);
+            // test that the relations are not flawed on their own
+            assertNotNull(br1);
+            assertTrue(br1.getSize() <= 50);
+            assertFalse(br1.getSize() < 0);
+            
+            assertNotNull(br2);
+            assertTrue(br2.getSize() <= 50);
+            assertFalse(br2.getSize() < 0);
 
-        assertThrows(IllegalArgumentException.class, () -> raImpl.intersect(projRel1, projRel2));
-
-        // Different Attribute Types
-        Relation projRel3 = raImpl.project(instructor_relation, List.of("dept_name", "salary"));
-
-        assertNotNull(projRel3);
-        assertTrue(projRel3.getSize() <= 50);
-        assertFalse(projRel3.getSize() < 0);
-
-        assertThrows(IllegalArgumentException.class, () -> raImpl.intersect(projRel1, projRel3));
+            // confirm that union of the two relations will fail
+            assertThrows(IllegalArgumentException.class, () -> raImpl.union(br1, br2));
+        }
     }
 
     @Test
@@ -299,7 +305,14 @@ public class RAImplTest {
 
     @Test
     public void validStudentRelation() {
+        assertNotNull(student_relation);
+        assertEquals(4, student_relation.getAttrs().size());
+        assertEquals(4, student_relation.getTypes().size());
+        assertEquals(2000, student_relation.getSize());
 
+        Cell firstCell = instructor_relation.getRow(0).get(0);
+        assertNotNull(firstCell);
+        assertEquals(Type.INTEGER, firstCell.getType());
     } 
 
     @Test
@@ -466,11 +479,4 @@ public class RAImplTest {
         IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.join(instructor_relation, course_relation, p));
         System.out.println(ex1.getMessage());
     }
-
-
-
-
-
-
-
 }
