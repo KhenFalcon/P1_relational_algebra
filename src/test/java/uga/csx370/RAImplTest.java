@@ -340,10 +340,6 @@ public class RAImplTest {
 
     @Test
     public void testThetaJoin() {
-        //Cell firstCell = instructor_relation.getRow(0).get(0);
-        //Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        //course_relation.loadData("test-tables/course_export.csv");
-
         Relation dept_relation = new RelationBuilder().attributeNames(List.of("dept_name", "building", "budget")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.DOUBLE)).build();
         dept_relation.loadData("test-tables/department.csv");
 
