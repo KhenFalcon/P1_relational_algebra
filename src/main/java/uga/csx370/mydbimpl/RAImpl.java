@@ -56,6 +56,7 @@ public class RAImpl implements RA {
         // System.out.println("Projecting attributes: " + attrs);
         // System.out.println("Full relation attributes: " + rel.getAttrs());
 
+                List<List<Cell>> projectedRows = new ArrayList<>(); // Sasha add
         int size = rel.getSize(); // call method only once
         for(int i = 0; i < size; i++) {
             List<Cell> row = rel.getRow(i);
@@ -66,7 +67,14 @@ public class RAImpl implements RA {
                 Cell proj_cell = row.get(proj_cell_index); // ...grab the cell in row using that index
                 proj_row.add(proj_cell); // ...and add the cell-data to proj_row
             }
-            r.insert(proj_row);
+            
+            // Sasha replaced 
+            // r.insert(proj_row); with ->
+            if (!projectedRows.contains(proj_row)) {
+                r.insert(proj_row);
+                projectedRows.add(proj_row);
+            }
+            //until here
         }
 
         return r;
@@ -256,66 +264,71 @@ public class RAImpl implements RA {
     }
 
     @Override
-    public Relation join(Relation rel1, Relation rel2) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'join'");
+public Relation join(Relation rel1, Relation rel2) {
 
-        List<String> attrs_rel1 = rel1.getAttrs(); // gets rel1 attributes
-        List<String> attrs_rel2 = rel2.getAttrs(); // gets rel2 attributes
+    List<String> attrs1 = rel1.getAttrs();
+    List<String> attrs2 = rel2.getAttrs();
 
-        List<String> common_attrs = new ArrayList<>(attrs_rel1); 
-        common_attrs.retainAll(attrs_rel2); // gets common attributes from both rel1 and rel2 relations
+    // Find attributes shared by both relations
+    List<String> commonAttrs = new ArrayList<>(attrs1);
+    commonAttrs.retainAll(attrs2);
 
-       List<String> attrs_rel2_rename = new ArrayList<>();
-       for (String attr : common_attrs) { // loops through common elements 
-            String rel2_rename = "rel2." + attr; // new name of attribute in rel2
-            attrs_rel2_rename.add(rel2_rename); // adds it to list
-       }
+    // Build the resulting attribute names and types.
+    // Start with everything from rel1.
+    List<String> resultAttrs = new ArrayList<>(attrs1);
+    List<Type> resultTypes = new ArrayList<>(rel1.getTypes());
 
-        Relation rel2_new = rename(rel2, common_attrs, attrs_rel2_rename);
-
-        Relation cartProduct = cartesianProduct(rel1, rel2_new); // cartesian product between rel1 and rel2
-        List<Integer> index_vals = new ArrayList<>(); // indexes of common attributes 
-
-        
-        index_vals.add(0, cartProduct.getAttrIndex(common_attrs.get(0)));
-        index_vals.add(1, cartProduct.getAttrIndex("rel2." + common_attrs.get(0)));     
-
-        Predicate p = new PredicateImpl(index_vals.get(0), "=", index_vals.get(1));
-        Relation theta_join = select(cartProduct, p); 
-        theta_join.print();
-
-        
-        List<String> tj_attrs = theta_join.getAttrs();
-        List<Integer> attrs_index = new ArrayList<>();
-        for (int i = 0; i < tj_attrs.size(); i ++) {
-            attrs_index.add(i); // gives indices 0 to n-1
+    // Add only non-common attributes from rel2.
+    for (int i = 0; i < attrs2.size(); i++) {
+        if (!commonAttrs.contains(attrs2.get(i))) {
+            resultAttrs.add(attrs2.get(i));
+            resultTypes.add(rel2.getTypes().get(i));
         }
-
-        List<Integer> odd_ins = new ArrayList<>();
-
-        for (int i = 0; i < index_vals.size(); i ++) {
-            if (i %2 != 0) {
-                odd_ins.add(index_vals.get(i));
-            }
-            //gets odd value indicies from index_vals
-        }
-
-        List<Integer> unique_inds = new ArrayList<>(attrs_index);
-        unique_inds.removeAll(odd_ins); // removes common rel2 attrs 
-
-        List<String> natural_join_attrs = new ArrayList<>(); // new attrs for natural join merging common attrs
-
-        for (int i = 0; i < unique_inds.size(); i ++) {
-            natural_join_attrs.add(i, tj_attrs.get(unique_inds.get(i)));
-            // gets attribute names 
-        }
-
-        Relation natural_join = project(theta_join, natural_join_attrs); // natural join
-
-        return natural_join;
-        
     }
+
+    Relation result = new RelationBuilder()
+            .attributeNames(resultAttrs)
+            .attributeTypes(resultTypes)
+            .build();
+
+    // Compare every row of rel1 with every row of rel2.
+    for (int i = 0; i < rel1.getSize(); i++) {
+        List<Cell> row1 = rel1.getRow(i);
+
+        for (int j = 0; j < rel2.getSize(); j++) {
+            List<Cell> row2 = rel2.getRow(j);
+
+            boolean matches = true;
+
+            // All common attributes must have equal values.
+            for (String attr : commonAttrs) {
+                int index1 = rel1.getAttrIndex(attr);
+                int index2 = rel2.getAttrIndex(attr);
+
+                if (!row1.get(index1).equals(row2.get(index2))) {
+                    matches = false;
+                    break;
+                }
+            }
+
+            if (matches) {
+                List<Cell> joinedRow = new ArrayList<>(row1);
+
+                // Add only the non-common cells from rel2.
+                for (int k = 0; k < attrs2.size(); k++) {
+                    if (!commonAttrs.contains(attrs2.get(k))) {
+                        joinedRow.add(row2.get(k));
+                    }
+                }
+
+                result.insert(joinedRow);
+            }
+        }
+    }
+
+    return result;
+} 
+    
 
     @Override
     public Relation join(Relation rel1, Relation rel2, Predicate p) {
