@@ -364,7 +364,7 @@ public class RAImplTest {
     @Test
     public void createCourseTable() {
         Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        course_relation.loadData("test-tables/course_export.csv");
+        course_relation.loadData("test-tables/course.csv");
         Relation project_title = raImpl.project(course_relation, List.of("title"));
         project_title.print();
     }
@@ -375,7 +375,7 @@ public class RAImplTest {
              .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
              .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
             .build();
-        students.loadData("test-tables/student_export.csv");
+        students.loadData("test-tables/student.csv");
         students.print();
     }
 
@@ -391,7 +391,7 @@ public class RAImplTest {
     @Test
     public void checkExceptionCartesianProduct() {
         Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        course_relation.loadData("test-tables/course_export.csv");
+        course_relation.loadData("test-tables/course.csv");
 
         IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.cartesianProduct(instructor_relation, course_relation));
         System.out.println(ex1.getMessage());
@@ -401,7 +401,7 @@ public class RAImplTest {
     @Test
     public void checkExceptionThetaJoin() {
         Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        course_relation.loadData("test-tables/course_export.csv");
+        course_relation.loadData("test-tables/course.csv");
         Predicate p = new PredicateImpl(2, "=", 6);
         IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.join(instructor_relation, course_relation, p));
         System.out.println(ex1.getMessage());
