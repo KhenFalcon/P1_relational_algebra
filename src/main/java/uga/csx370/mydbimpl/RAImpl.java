@@ -167,8 +167,8 @@ public class RAImpl implements RA {
     public Relation cartesianProduct(Relation rel1, Relation rel2) {
         // TODO Auto-generated method stub
         //throw new UnsupportedOperationException("Unimplemented method 'cartesianProduct'");
-        List<String> attrs_rel1_rename = new ArrayList<>();
-        List<String> attrs_rel2_rename = new ArrayList<>();
+        //List<String> attrs_rel1_rename = new ArrayList<>();
+        //List<String> attrs_rel2_rename = new ArrayList<>();
 
         List<String> rel1_attrs = rel1.getAttrs();
         List<String> rel2_attrs = rel2.getAttrs();
@@ -178,7 +178,8 @@ public class RAImpl implements RA {
                 throw new IllegalArgumentException("rel1 and rel2 have common attributes");
             }
         }
-
+        
+        /* 
         for (String attrs : rel1.getAttrs()) {
             String rel1_rename = "rel1." + attrs; // adds prefix to specifc attribute
             attrs_rel1_rename.add(rel1_rename); // adds the prefixed attribute to the ArrayList of renamed attributes for rel1
@@ -188,11 +189,15 @@ public class RAImpl implements RA {
             String rel2_rename = "rel2." + attrs; // adds prefix to each attribute
             attrs_rel2_rename.add(rel2_rename); // adds prefixed attributes to ArrayList of renamed attributes for rel2
         } // for loop to rename attributes in rel2 
+        */
 
-
+        /* 
         List<String> attrs_combined = new ArrayList<>(attrs_rel1_rename);
         attrs_combined.addAll(attrs_rel2_rename);
         System.out.println(attrs_combined); // ArrayList of combined attributes to make new relation
+        */
+       List<String> attrs_combined = new ArrayList<>(rel1_attrs);
+       attrs_combined.addAll(rel2_attrs);
 
         List<Type> attrs_types_rel1 = rel1.getTypes();
         List<Type> attrs_types_rel2 = rel2.getTypes();
@@ -217,10 +222,12 @@ public class RAImpl implements RA {
 
         } // outer for loop for row in rel1 -> combines specific row with all the rows in rel2
 
+        /* 
         HashSet<String> attrs = new HashSet<>(attrs_combined);
         if (attrs_combined.size() != attrs.size()) {
             throw new IllegalArgumentException("rel1 and re12 have common attributes");
         }
+        */
 
 
         return cartProd; // returns cartesian product
@@ -240,11 +247,19 @@ public class RAImpl implements RA {
         common_attrs.retainAll(attrs_rel2); // gets common attributes from both rel1 and rel2 relations
         System.out.println(common_attrs); // [dept_name]
 
-        Relation cartProduct = cartesianProduct(rel1, rel2); // cartesian product between rel1 and rel2
+        List<String> attrs_rel2_rename = new ArrayList<>();
+        for (String attrs : rel2.getAttrs()) {
+            String rel2_rename = "rel2." + attrs; // adds prefix to each attribute
+            attrs_rel2_rename.add(rel2_rename); // adds prefixed attributes to ArrayList of renamed attributes for rel2
+        } // for loop to rename attributes in rel2 
+
+        Relation rel2_new = rename(rel2, attrs_rel2, attrs_rel2_rename);
+
+        Relation cartProduct = cartesianProduct(rel1, rel2_new); // cartesian product between rel1 and rel2
         List<Integer> index_vals = new ArrayList<>(); // indexes of common attributes 
 
         
-        index_vals.add(0, cartProduct.getAttrIndex("rel1." + common_attrs.get(0)));
+        index_vals.add(0, cartProduct.getAttrIndex(common_attrs.get(0)));
         index_vals.add(1, cartProduct.getAttrIndex("rel2." + common_attrs.get(0)));     
         System.out.println(index_vals); // [2, 6]
 
