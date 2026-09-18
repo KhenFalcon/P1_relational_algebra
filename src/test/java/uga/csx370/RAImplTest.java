@@ -43,7 +43,7 @@ public class RAImplTest {
             .attributeNames(List.of("ID", "name", "dept_name", "salary"))
             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
             .build();
-        instructor_relation.loadData("test-tables/instructor_export.csv");
+        instructor_relation.loadData("test-tables/instructor.csv");
         validInstructorRelation();
     }
 
