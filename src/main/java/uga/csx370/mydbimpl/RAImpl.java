@@ -129,8 +129,43 @@ public class RAImpl implements RA {
 
     @Override
     public Relation diff(Relation rel1, Relation rel2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'diff'");
+        // Compatibility check
+        List<Type> types1 = rel1.getTypes();
+        List<Type> types2 = rel2.getTypes();
+
+        if (types1.size() != types2.size()) {
+            throw new IllegalArgumentException(
+                "Relations are not compatible for set difference.");
+        }
+        for (int i = 0; i < types1.size(); i++) {
+            if (types1.get(i) != types2.get(i)) {
+                throw new IllegalArgumentException(
+                    "Relations are not compatible for set difference.");
+            }
+        }
+
+        // Build result with rel1's schema
+        Relation result = new RelationBuilder()
+                .attributeNames(rel1.getAttrs())
+                .attributeTypes(rel1.getTypes())
+                .build();
+
+        // Collect rel2 rows
+        Set<List<Cell>> rel2Rows = new HashSet<>();
+        for (int i = 0; i < rel2.getSize(); i++) {
+            rel2Rows.add(rel2.getRow(i));
+        }
+
+        // Insert rel1 rows not in rel2, skipping duplicates
+        Set<List<Cell>> seen = new HashSet<>();
+        for (int i = 0; i < rel1.getSize(); i++) {
+            List<Cell> row = rel1.getRow(i);
+            if (!rel2Rows.contains(row) && seen.add(row)) {
+                result.insert(row);
+            }
+        }
+
+        return result;
     }
 
     @Override
