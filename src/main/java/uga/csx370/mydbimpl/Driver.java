@@ -32,7 +32,7 @@ public class Driver {
         // rel1.loadData("/path/to/exported/csv_file");
         // rel1.print();
 
-        // Sasha Add
+        // Load relations used by the queries
         RA ra = new RAImpl();
         Relation students = new RelationBuilder()
             .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
@@ -62,12 +62,60 @@ public class Driver {
         
         courses.loadData("test-tables/course.csv");
 
-        // Original
+        Relation advisors = new RelationBuilder()
+            .attributeNames(List.of("s_ID", "i_ID"))
+            .attributeTypes(List.of(Type.INTEGER, Type.INTEGER))
+            .build();
+
+        advisors.loadData("test-tables/advisor.csv");
+
+        Relation departments = new RelationBuilder()
+            .attributeNames(List.of("dept_name", "building", "budget"))
+            .attributeTypes(List.of(Type.STRING, Type.STRING, Type.DOUBLE))
+            .build();
+
+        departments.loadData("test-tables/department.csv");
+
+        Relation teaches = new RelationBuilder()
+            .attributeNames(List.of(
+                "ID", "course_id", "sec_id", "semester", "year"))
+            .attributeTypes(List.of(
+                Type.INTEGER, Type.STRING, Type.STRING,
+                Type.STRING, Type.INTEGER))
+            .build();
+
+        teaches.loadData("test-tables/teaches.csv");
+
+        Relation sections = new RelationBuilder()
+            .attributeNames(List.of(
+                "course_id", "sec_id", "semester", "year",
+                "building", "room_number", "time_slot_id"))
+            .attributeTypes(List.of(
+                Type.STRING, Type.STRING, Type.STRING, Type.INTEGER,
+                Type.STRING, Type.STRING, Type.STRING))
+            .build();
+
+        sections.loadData("test-tables/section.csv");
+
+        Relation timeSlots = new RelationBuilder()
+            .attributeNames(List.of(
+                "time_slot_id", "day", "start_hr", "start_min",
+                "end_hr", "end_min"))
+            .attributeTypes(List.of(
+                Type.STRING, Type.STRING, Type.INTEGER, Type.INTEGER,
+                Type.INTEGER, Type.INTEGER))
+            .build();
+
+        timeSlots.loadData("test-tables/time_slot.csv");
+
         Relation instructors = new RelationBuilder()
             .attributeNames(List.of("ID", "name", "dept_name", "salary"))
             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
             .build();
         instructors.loadData("test-tables/instructor.csv");
+        
+        
+
         // instructors.print();
 
         // Relation students = new RelationBuilder()
@@ -93,7 +141,7 @@ public class Driver {
         Relation studentTakesCourses = ra.join(studentTakes, courses);
 
         Predicate csPredicate = new PredicateImpl(
-            10,
+            studentTakesCourses.getAttrIndex("dept_name"),
             "=",
             Cell.val("Comp. Sci.")
         );
@@ -104,7 +152,7 @@ public class Driver {
         );
         
         Predicate coursePredicate = new PredicateImpl(
-            9,
+            csCourses.getAttrIndex("title"),
             "=",
             Cell.val("International Practicum")
         );
@@ -115,7 +163,7 @@ public class Driver {
         );
 
         Predicate gradePredicate = new PredicateImpl(
-            8,
+            practicum.getAttrIndex("grade"),
             "=",
             Cell.val("A ")
         );
@@ -131,6 +179,210 @@ public class Driver {
         );
         
         result.print();
+        //Sasha query ends here
+
+        // Joshua's Query
+        System.out.println(
+            "\nQuery: Find the IDs and names of all students " +
+            "that are advised by the instructor named \"Mird\"."
+        );
+
+        Relation renamedInstructors = ra.rename(
+            instructors,
+            List.of("ID", "name", "dept_name"),
+            List.of("i_ID", "advisor_name", "instructor_dept")
+        );
+
+        Predicate mirdPredicate = new PredicateImpl(
+            renamedInstructors.getAttrIndex("advisor_name"),
+            "=",
+            Cell.val("Mird")
+        );
+
+        Relation mirdInstructor = ra.select(
+            renamedInstructors,
+            mirdPredicate
+        );
+
+        Relation mirdAdvisors = ra.join(
+            mirdInstructor,
+            advisors
+        );
+
+        Relation renamedStudentsForAdvisor = ra.rename(
+            students,
+            List.of("ID", "dept_name"),
+            List.of("s_ID", "student_dept")
+        );
+
+        Relation advisedStudents = ra.join(
+            mirdAdvisors,
+            renamedStudentsForAdvisor
+        );
+
+        Relation advisorResult = ra.project(
+            advisedStudents,
+            List.of("s_ID", "name")
+        );
+
+        advisorResult.print();
+        // Joshua's query ends here
+
+        // Adiva's Query
+        System.out.println(
+            "\nQuery: Find instructors teaching advanced courses (4+ credits), " +
+            "along with the course title, credits, and department name."
+        );
+
+        Relation renamedInstructorsAdvanced = ra.rename(
+            instructors,
+            List.of("ID", "name"),
+            List.of("instructor_ID", "instructor_name")
+        );
+
+        Relation renamedTeachesAdvanced = ra.rename(
+            teaches,
+            List.of("ID"),
+            List.of("instructor_ID")
+        );
+
+        Relation instructorTeaches = ra.join(
+            renamedInstructorsAdvanced,
+            renamedTeachesAdvanced
+        );
+
+        Relation renamedCoursesAdvanced = ra.rename(
+            courses,
+            List.of("dept_name"),
+            List.of("course_dept")
+        );
+
+        Relation instructorCourses = ra.join(
+            instructorTeaches,
+            renamedCoursesAdvanced
+        );
+
+        Relation instructorCourseDepartments = ra.join(
+            instructorCourses,
+            departments
+        );
+
+        Predicate advancedCoursePredicate = new PredicateImpl(
+            instructorCourseDepartments.getAttrIndex("credits"),
+            ">=",
+            Cell.val(4)
+        );
+
+        Relation advancedCourses = ra.select(
+            instructorCourseDepartments,
+            advancedCoursePredicate
+        );
+
+        Relation advancedCourseResult = ra.project(
+            advancedCourses,
+            List.of("instructor_name", "title", "credits", "dept_name")
+        );
+
+        advancedCourseResult.print();
+        // Adiva's query ends
+
+        // Amy's query
+        System.out.println(
+            "\nQuery: Find professors who have taught an 8 AM course."
+        );
+
+        Relation renamedInstructors8AM = ra.rename(
+            instructors,
+            List.of("ID"),
+            List.of("instructor_ID")
+        );
+
+        Relation renamedTeaches8AM = ra.rename(
+            teaches,
+            List.of("ID"),
+            List.of("instructor_ID")
+        );
+
+        Relation instructorTeaches8AM = ra.join(
+            renamedInstructors8AM,
+            renamedTeaches8AM
+        );
+
+        Relation instructorSections8AM = ra.join(
+            instructorTeaches8AM,
+            sections
+        );
+
+        Relation instructorTimeSlots8AM = ra.join(
+            instructorSections8AM,
+            timeSlots
+        );
+
+        Predicate eightAMPredicate = new PredicateImpl(
+            instructorTimeSlots8AM.getAttrIndex("start_hr"),
+            "=",
+            Cell.val(8)
+        );
+
+        Relation eightAMInstructors = ra.select(
+            instructorTimeSlots8AM,
+            eightAMPredicate
+        );
+
+        Relation eightAMResult = ra.project(
+            eightAMInstructors,
+            List.of("name", "dept_name", "salary")
+        );
+
+        eightAMResult.print();
+        // Amy's Query ends here
+
+        // Mia's Query
+        System.out.println(
+            "\nQuery: Find the names of instructors who advise students " +
+            "in the Computer Science department."
+        );
+
+        Relation renamedInstructorsCSAdvisor = ra.rename(
+            instructors,
+            List.of("ID", "name", "dept_name"),
+            List.of("i_ID", "instructor_name", "instructor_dept")
+        );
+
+        Relation instructorAdvisorsCS = ra.join(
+            renamedInstructorsCSAdvisor,
+            advisors
+        );
+
+        Relation renamedStudentsCSAdvisor = ra.rename(
+            students,
+            List.of("ID"),
+            List.of("s_ID")
+        );
+
+        Relation instructorsAndStudentsCS = ra.join(
+            instructorAdvisorsCS,
+            renamedStudentsCSAdvisor
+        );
+
+        Predicate csStudentPredicate = new PredicateImpl(
+            instructorsAndStudentsCS.getAttrIndex("dept_name"),
+            "=",
+            Cell.val("Comp. Sci.")
+        );
+
+        Relation csAdvisedStudents = ra.select(
+            instructorsAndStudentsCS,
+            csStudentPredicate
+        );
+
+        Relation csAdvisorResult = ra.project(
+            csAdvisedStudents,
+            List.of("instructor_name")
+        );
+
+        csAdvisorResult.print();
+        // Mia's Query ends here
     }
 
 }
