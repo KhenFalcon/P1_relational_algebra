@@ -135,8 +135,6 @@ public class RAImpl implements RA {
 
     @Override
     public Relation rename(Relation rel, List<String> origAttr, List<String> renamedAttr) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'rename'");
 
         List<String> rel_attrs = rel.getAttrs(); // gets rel attributes
         if (origAttr.size() != renamedAttr.size()) {
@@ -165,10 +163,6 @@ public class RAImpl implements RA {
 
     @Override
     public Relation cartesianProduct(Relation rel1, Relation rel2) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'cartesianProduct'");
-        //List<String> attrs_rel1_rename = new ArrayList<>();
-        //List<String> attrs_rel2_rename = new ArrayList<>();
 
         List<String> rel1_attrs = rel1.getAttrs();
         List<String> rel2_attrs = rel2.getAttrs();
@@ -179,9 +173,8 @@ public class RAImpl implements RA {
             }
         }
         
-        
-       List<String> attrs_combined = new ArrayList<>(rel1_attrs);
-       attrs_combined.addAll(rel2_attrs);
+        List<String> attrs_combined = new ArrayList<>(rel1_attrs);
+        attrs_combined.addAll(rel2_attrs);
 
         List<Type> attrs_types_rel1 = rel1.getTypes();
         List<Type> attrs_types_rel2 = rel2.getTypes();
@@ -214,8 +207,6 @@ public class RAImpl implements RA {
 
     @Override
     public Relation join(Relation rel1, Relation rel2) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'join'");
 
         List<String> attrs_rel1 = rel1.getAttrs(); // gets rel1 attributes
         List<String> attrs_rel2 = rel2.getAttrs(); // gets rel2 attributes
@@ -282,9 +273,6 @@ public class RAImpl implements RA {
 
     @Override
     public Relation join(Relation rel1, Relation rel2, Predicate p) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'join'");
-
         // do cartProd first and then do theta join
 
         List<String> rel1_attrs = rel1.getAttrs();
