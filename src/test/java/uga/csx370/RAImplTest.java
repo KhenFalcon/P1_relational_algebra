@@ -295,8 +295,20 @@ public class RAImplTest {
     @Test
     public void testRename() {
         Relation rel_rename = raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("rel1_ID", "rel1_name", "rel1_dept_name", "rel1_salary"));
-        rel_rename.print();
+        rel_rename.print(); // renaming all 4 columns
         System.out.println(rel_rename.getAttrs());
+
+        Relation rel_rename2 = raImpl.rename(instructor_relation, List.of("ID", "name"), List.of("rel1.ID", "rel1.name"));
+        rel_rename2.print(); // renaming only first two columns
+        System.out.println(rel_rename2.getAttrs());
+
+        Relation rel_rename3 = raImpl.rename(instructor_relation, List.of("salary"), List.of("rel1.salary"));
+        rel_rename3.print(); // renaming last column
+        System.out.println(rel_rename3.getAttrs());
+
+        Relation rel_rename4 = raImpl.rename(instructor_relation, List.of("dept_name"), List.of("re1.dept_name"));
+        rel_rename4.print();
+        System.out.println(rel_rename4.getAttrs());
 
     }
 
@@ -330,13 +342,19 @@ public class RAImplTest {
         Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
         course_relation.loadData("test-tables/course_export.csv");
 
-        Relation rename_course = raImpl.rename(course_relation, List.of("course_id", "title", "dept_name", "credits"), List.of("rel2.course_id", "rel2.title", "rel2.dept_name", "rel2.credits"));
+        Relation rename_course = raImpl.rename(course_relation, List.of("dept_name"), List.of("rel2.dept_name"));
         // needed to rename as the exception is done on raw attributes which do have common values
         Predicate p = new PredicateImpl(2, "=", 6);
         Relation theta_join = raImpl.join(instructor_relation, rename_course, p);
         theta_join.print();
         System.out.println(instructor_relation.getAttrs());
         System.out.println(theta_join.getAttrs());
+
+        Relation rename_instructor = raImpl.rename(instructor_relation, List.of("dept_name"), List.of("rel1.dept_name"));
+        Relation theta_join2 = raImpl.join(rename_instructor, course_relation,p);
+        theta_join2.print();
+        System.out.println(instructor_relation.getAttrs());
+        System.out.println(theta_join2.getAttrs());
 
 
 
