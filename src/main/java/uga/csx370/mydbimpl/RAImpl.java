@@ -150,13 +150,14 @@ public class RAImpl implements RA {
 
         }
 
-        List<String> new_attrs = new ArrayList<>(rel_attrs);
-        for (int i = 0; i < origAttr.size(); i ++) {
-            String oldColumnName = origAttr.get(i);
-            String newColumnName = renamedAttr.get(i);
-            int index = new_attrs.indexOf(oldColumnName);
-            if (index != -1) {
+        List<String> new_attrs = new ArrayList<>(rel_attrs); // list built to contain new attribute names
+        for (int i = 0; i < origAttr.size(); i ++) { // looping through original attributes
+            String oldColumnName = origAttr.get(i); // gets old column name
+            String newColumnName = renamedAttr.get(i); // gets new column name 
+            int index = new_attrs.indexOf(oldColumnName); // finds index of old column name in new_attrs
+            if (index != -1) { 
                 new_attrs.set(index, newColumnName);
+                // if index is found, then we set the new column name at same index of old column name
             }
         }
 
@@ -176,8 +177,6 @@ public class RAImpl implements RA {
     public Relation cartesianProduct(Relation rel1, Relation rel2) {
         // TODO Auto-generated method stub
         //throw new UnsupportedOperationException("Unimplemented method 'cartesianProduct'");
-        //List<String> attrs_rel1_rename = new ArrayList<>();
-        //List<String> attrs_rel2_rename = new ArrayList<>();
 
         List<String> rel1_attrs = rel1.getAttrs();
         List<String> rel2_attrs = rel2.getAttrs();
@@ -233,13 +232,13 @@ public class RAImpl implements RA {
         common_attrs.retainAll(attrs_rel2); // gets common attributes from both rel1 and rel2 relations
         System.out.println(common_attrs); // [dept_name]
 
-        List<String> attrs_rel2_rename = new ArrayList<>();
-        for (String attrs : rel2.getAttrs()) {
-            String rel2_rename = "rel2." + attrs; // adds prefix to each attribute
-            attrs_rel2_rename.add(rel2_rename); // adds prefixed attributes to ArrayList of renamed attributes for rel2
-        } // for loop to rename attributes in rel2 
+       List<String> attrs_rel2_rename = new ArrayList<>();
+       for (String attr : common_attrs) { // loops through common elements 
+            String rel2_rename = "rel2." + attr; // new name of attribute in rel2
+            attrs_rel2_rename.add(rel2_rename); // adds it to list
+       }
 
-        Relation rel2_new = rename(rel2, attrs_rel2, attrs_rel2_rename);
+        Relation rel2_new = rename(rel2, common_attrs, attrs_rel2_rename);
 
         Relation cartProduct = cartesianProduct(rel1, rel2_new); // cartesian product between rel1 and rel2
         List<Integer> index_vals = new ArrayList<>(); // indexes of common attributes 
