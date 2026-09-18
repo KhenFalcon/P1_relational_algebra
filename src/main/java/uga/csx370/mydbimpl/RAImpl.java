@@ -150,8 +150,17 @@ public class RAImpl implements RA {
 
         }
 
+        List<String> new_attrs = new ArrayList<>(rel_attrs);
+        for (int i = 0; i < origAttr.size(); i ++) {
+            String oldColumnName = origAttr.get(i);
+            String newColumnName = renamedAttr.get(i);
+            int index = new_attrs.indexOf(oldColumnName);
+            if (index != -1) {
+                new_attrs.set(index, newColumnName);
+            }
+        }
 
-        Relation rename_rel = new RelationBuilder().attributeNames(renamedAttr).attributeTypes(rel.getTypes()).build();
+        Relation rename_rel = new RelationBuilder().attributeNames(new_attrs).attributeTypes(rel.getTypes()).build();
         // constructs new relation based on given renamedAttr and infers same types from rel
 
         for (int i = 0; i < rel.getSize(); i++) {
