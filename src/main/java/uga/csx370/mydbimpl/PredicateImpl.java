@@ -26,25 +26,43 @@ public class PredicateImpl implements Predicate {
     private String operator;
     private Cell criterion;
 
+    // new attributes to support column-to-column comparision, e.g. joins
+    private int columnIndex2;
+    private boolean columnComparison; // boolean value to determine if we are doing column to column comparison
+
     public PredicateImpl(int columnIndex, String operator, Cell criterion) {
         this.columnIndex = columnIndex;
         this.operator = operator;
         this.criterion = criterion;
+        this.columnComparison = false; // checking is a single column meets a certain criteria -> not column to column
     }
+
+    // Constructor to be able to do column to column comparison for joins
+    public PredicateImpl(int columnIndex, String operator, int columnIndex2) {
+        this.columnIndex = columnIndex;
+        this.operator = operator;
+        this.columnIndex2 = columnIndex2;
+        this.columnComparison = true;
+    }
+
 
     @Override
     public boolean check(List<Cell> row) {
         Cell cell = row.get(columnIndex);
+        Cell cell2 = columnComparison ? row.get(columnIndex2) : this.criterion;
+        // determines if we are doing column to column comparison
+        // if columnComparison = true, we get the other column for columnIndex2
+        // if columnComparison = false, we get the criterion to evaluate on cell;
 
-        if (cell.getType() != criterion.getType())
+        if (cell.getType() != cell2.getType())
             throw new IllegalArgumentException("Compared column's type does not match criterion type.");
         
         // check for general comparisons that are valid for all types (i.e. equality and inequality)
         switch (operator) {
             case "=":
-                return cell.equals(criterion);
+                return cell.equals(cell2);
             case "!=":
-                return !cell.equals(criterion);
+                return !cell.equals(cell2);
             case "*":
                 return true;
         }
@@ -53,8 +71,8 @@ public class PredicateImpl implements Predicate {
         try {
             // Use Integer.compare() or Double.compare() to generalize the comparison logic to one variable
             double resultant = cell.getType() == Type.INTEGER 
-                ? Integer.compare(cell.getAsInt(), criterion.getAsInt())
-                : Double.compare(cell.getAsDouble(), criterion.getAsDouble());
+                ? Integer.compare(cell.getAsInt(), cell2.getAsInt())
+                : Double.compare(cell.getAsDouble(), cell2.getAsDouble());
 
             switch (operator) {
                 case "<":
@@ -79,6 +97,9 @@ public class PredicateImpl implements Predicate {
 
     @Override
     public String toString() {
+        if (columnComparison) {
+            return "PredicateImpl [columnIndex=" + columnIndex + ", operator=" + operator + ", columnIndex2=" + columnIndex2 + "]";
+        }
         return "PredicateImpl [columnIndex=" + columnIndex + ", operator=" + operator + ", criterion=" + criterion
                 + "]";
     }
