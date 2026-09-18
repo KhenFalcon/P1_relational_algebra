@@ -56,6 +56,7 @@ public class RAImpl implements RA {
         // System.out.println("Projecting attributes: " + attrs);
         // System.out.println("Full relation attributes: " + rel.getAttrs());
 
+                List<List<Cell>> projectedRows = new ArrayList<>(); // Sasha add
         int size = rel.getSize(); // call method only once
         for(int i = 0; i < size; i++) {
             List<Cell> row = rel.getRow(i);
@@ -66,7 +67,14 @@ public class RAImpl implements RA {
                 Cell proj_cell = row.get(proj_cell_index); // ...grab the cell in row using that index
                 proj_row.add(proj_cell); // ...and add the cell-data to proj_row
             }
-            r.insert(proj_row);
+            
+            // Sasha replaced 
+            // r.insert(proj_row); with ->
+            if (!projectedRows.contains(proj_row)) {
+                r.insert(proj_row);
+                projectedRows.add(proj_row);
+            }
+            //until here
         }
 
         return r;
