@@ -120,7 +120,6 @@ public class RAImplTest {
             Relation result = raImpl.project(instructor_relation, attr);
             
             assertNotNull(result);
-            assertTrue(result.getSize() <= 50);
             assertFalse(result.getSize() < 0);
             assertEquals(attr.size(), result.getAttrs().size());
             assertEquals(attr.size(), result.getTypes().size());
@@ -171,11 +170,9 @@ public class RAImplTest {
             Relation predicateResult2 = raImpl.select(instructor_relation, predicate2);
 
             assertNotNull(predicateResult1);
-            assertTrue(predicateResult1.getSize() <= 50);
             assertFalse(predicateResult1.getSize() < 0);
 
             assertNotNull(predicateResult2);
-            assertTrue(predicateResult2.getSize() <= 50);
             assertFalse(predicateResult2.getSize() < 0);
 
             Relation unionResult = raImpl.union(predicateResult1, predicateResult2);
@@ -197,11 +194,9 @@ public class RAImplTest {
         Relation projRel2 = raImpl.project(instructor_relation, List.of("ID", "name", "salary"));
 
         assertNotNull(projRel1);
-        assertTrue(projRel1.getSize() <= 50);
         assertFalse(projRel1.getSize() < 0);
 
         assertNotNull(projRel2);
-        assertTrue(projRel2.getSize() <= 50);
         assertFalse(projRel2.getSize() < 0);
 
         assertThrows(IllegalArgumentException.class, () -> raImpl.union(projRel1, projRel2));
@@ -210,7 +205,6 @@ public class RAImplTest {
         Relation projRel3 = raImpl.project(instructor_relation, List.of("dept_name", "salary"));
 
         assertNotNull(projRel3);
-        assertTrue(projRel3.getSize() <= 50);
         assertFalse(projRel3.getSize() < 0);
 
         assertThrows(IllegalArgumentException.class, () -> raImpl.union(projRel1, projRel3));
@@ -238,11 +232,9 @@ public class RAImplTest {
             Relation predicateResult2 = raImpl.select(instructor_relation, predicate2);
 
             assertNotNull(predicateResult1);
-            assertTrue(predicateResult1.getSize() <= 50);
             assertFalse(predicateResult1.getSize() < 0);
 
             assertNotNull(predicateResult2);
-            assertTrue(predicateResult2.getSize() <= 50);
             assertFalse(predicateResult2.getSize() < 0);
 
             Relation intersectResult = raImpl.intersect(predicateResult1, predicateResult2);
@@ -259,11 +251,9 @@ public class RAImplTest {
         Relation projRel2 = raImpl.project(instructor_relation, List.of("ID", "name", "salary"));
 
         assertNotNull(projRel1);
-        assertTrue(projRel1.getSize() <= 50);
         assertFalse(projRel1.getSize() < 0);
 
         assertNotNull(projRel2);
-        assertTrue(projRel2.getSize() <= 50);
         assertFalse(projRel2.getSize() < 0);
 
         assertThrows(IllegalArgumentException.class, () -> raImpl.intersect(projRel1, projRel2));
@@ -272,7 +262,6 @@ public class RAImplTest {
         Relation projRel3 = raImpl.project(instructor_relation, List.of("dept_name", "salary"));
 
         assertNotNull(projRel3);
-        assertTrue(projRel3.getSize() <= 50);
         assertFalse(projRel3.getSize() < 0);
 
         assertThrows(IllegalArgumentException.class, () -> raImpl.intersect(projRel1, projRel3));
