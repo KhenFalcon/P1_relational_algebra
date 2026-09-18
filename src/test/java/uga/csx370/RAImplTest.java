@@ -350,6 +350,12 @@ public class RAImplTest {
         System.out.println(instructor_relation.getAttrs());
         System.out.println(theta_join.getAttrs());
 
+        Relation rename_instructor = raImpl.rename(instructor_relation, List.of("dept_name"), List.of("rel1.dept_name"));
+        Relation theta_join2 = raImpl.join(rename_instructor, course_relation,p);
+        theta_join2.print();
+        System.out.println(instructor_relation.getAttrs());
+        System.out.println(theta_join2.getAttrs());
+
 
 
     }
