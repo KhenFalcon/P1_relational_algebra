@@ -346,8 +346,7 @@ public class RAImplTest {
     public void checkExceptionDiff() {
         Relation[] incompatableRelations = {
             student_relation,
-            raImpl.project(instructor_relation, List.of("ID", "dept_name")),
-            // raImpl.cartesianProduct(instructor_relation, student_relation)
+            raImpl.project(instructor_relation, List.of("ID", "dept_name"))
         };
 
         for (Relation r : incompatableRelations) {
