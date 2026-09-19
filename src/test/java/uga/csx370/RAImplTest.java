@@ -222,7 +222,7 @@ public class RAImplTest {
     public void testUnion() {
 
         // Valid tests (borrowed predicates from Joshua's select tests!)
-        PredicateImpl[] predicates = new PredicateImpl[] {
+        Predicate[] predicates = new PredicateImpl[] {
                 new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
                 new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
                 new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
@@ -233,8 +233,8 @@ public class RAImplTest {
         };
 
         for (int i = 0; i < predicates.length - 1; i++) {
-            PredicateImpl predicate1 = predicates[i];
-            PredicateImpl predicate2 = predicates[i + 1];
+            Predicate predicate1 = predicates[i];
+            Predicate predicate2 = predicates[i + 1];
 
             Relation predicateResult1 = raImpl.select(instructor_relation, predicate1);
             Relation predicateResult2 = raImpl.select(instructor_relation, predicate2);
@@ -292,7 +292,7 @@ public class RAImplTest {
     public void testIntersect() {
 
         // Valid tests (borrowed predicates from Joshua's select tests!)
-        PredicateImpl[] predicates = new PredicateImpl[] {
+        Predicate[] predicates = new PredicateImpl[] {
                 new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
                 new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
                 new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
@@ -303,8 +303,8 @@ public class RAImplTest {
         };
 
         for (int i = 0; i < predicates.length - 1; i++) {
-            PredicateImpl predicate1 = predicates[i];
-            PredicateImpl predicate2 = predicates[i + 1];
+            Predicate predicate1 = predicates[i];
+            Predicate predicate2 = predicates[i + 1];
 
             Relation predicateResult1 = raImpl.select(instructor_relation, predicate1);
             Relation predicateResult2 = raImpl.select(instructor_relation, predicate2);

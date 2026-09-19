@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.naming.directory.InvalidAttributesException;
-
 import uga.csx370.mydb.Cell;
 import uga.csx370.mydb.Predicate;
 import uga.csx370.mydb.RA;
