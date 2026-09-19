@@ -35,6 +35,7 @@ public class RAImplTest {
     private Relation instructor_relation;
     private Relation student_relation;
     private Relation classroom_relation;
+    private Relation department_relation;
 
     @BeforeAll
     public void setup() {
@@ -42,25 +43,32 @@ public class RAImplTest {
         assertNotNull(raImpl);
 
         instructor_relation = new RelationBuilder()
-            .attributeNames(List.of("ID", "name", "dept_name", "salary"))
-            .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
-            .build();
+                .attributeNames(List.of("ID", "name", "dept_name", "salary"))
+                .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
+                .build();
         instructor_relation.loadData("test-tables/instructor.csv");
         validInstructorRelation();
 
         student_relation = new RelationBuilder()
-             .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
-             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
-            .build();
+                .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
+                .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
+                .build();
         student_relation.loadData("test-tables/student.csv");
         validStudentRelation();
 
         classroom_relation = new RelationBuilder()
-            .attributeNames(List.of("building", "room_number", "capacity"))
-            .attributeTypes(List.of(Type.STRING, Type.INTEGER, Type.INTEGER))
-            .build();
+                .attributeNames(List.of("building", "room_number", "capacity"))
+                .attributeTypes(List.of(Type.STRING, Type.INTEGER, Type.INTEGER))
+                .build();
         classroom_relation.loadData("test-tables/classroom.csv");
         validClassroomRelation();
+
+        department_relation = new RelationBuilder()
+                .attributeNames(List.of("dept_name", "building", "budget"))
+                .attributeTypes(List.of(Type.STRING, Type.STRING, Type.DOUBLE))
+                .build();
+        department_relation.loadData("test-tables/department.csv");
+        validDepartmentrRelation();
     }
 
     @Test
@@ -108,6 +116,18 @@ public class RAImplTest {
         assertEquals(Type.STRING, firstCell.getType());
     }
     
+    @Test 
+    public void validDepartmentrRelation() {
+        assertNotNull(department_relation);
+        assertEquals(3, department_relation.getAttrs().size());
+        assertEquals(3, department_relation.getTypes().size());
+        assertEquals(20, department_relation.getSize());
+
+        Cell firstCell = department_relation.getRow(0).get(0);
+        assertNotNull(firstCell);
+        assertEquals(Type.STRING, firstCell.getType());
+    }
+
     @Test
     public void testSelect() {
         // --- Good Tests -------------------------------------------------------------------------
@@ -465,7 +485,7 @@ public class RAImplTest {
     @Test
     public void testCartesianProduct() {
         // --- Good Tests -------------------------------------------------------------------------
-        Relation[] goodRealtions = {
+        Relation[] goodRelations = {
                 raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))), // department name is Athletics
                 raImpl.select(classroom_relation, new PredicateImpl(0, "=", Cell.val("Gates"))), // building is gates
                 raImpl.select(instructor_relation, new PredicateImpl(3, ">", Cell.val(100000.0))), // salary is greater than 100000.0
@@ -474,13 +494,13 @@ public class RAImplTest {
                 raImpl.select(classroom_relation, new PredicateImpl(2, "<", Cell.val(15))), // building is gates
         };
 
-        for (int i = 0; i < goodRealtions.length - 1; i++) {
-            Relation cartProd = raImpl.cartesianProduct(goodRealtions[i], goodRealtions[i + 1]);
+        for (int i = 0; i < goodRelations.length - 1; i++) {
+            Relation cartProd = raImpl.cartesianProduct(goodRelations[i], goodRelations[i + 1]);
 
             assertNotNull(cartProd);
             assertTrue(cartProd.getSize() >= 0);
             assertTrue(cartProd.getSize() <= instructor_relation.getSize() * classroom_relation.getSize());
-            assertTrue(cartProd.getSize() == goodRealtions[i].getSize() * goodRealtions[i + 1].getSize());
+            assertTrue(cartProd.getSize() == goodRelations[i].getSize() * goodRelations[i + 1].getSize());
 
             cartProd.print();
         }
@@ -504,13 +524,42 @@ public class RAImplTest {
 
     @Test
     public void testNaturalJoin() {
+        // --- Good Tests -------------------------------------------------------------------------
+        Relation[] goodRelations = {
+                instructor_relation,
+                department_relation,
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))),
+                raImpl.select(department_relation, new PredicateImpl(0, "=", Cell.val("Athletics"))),
+        };
 
-        Relation dept_relation = new RelationBuilder().attributeNames(List.of("dept_name", "building", "budget")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        dept_relation.loadData("test-tables/department.csv");
-        Relation natural_join = raImpl.join(instructor_relation, dept_relation);
-        natural_join.print();
-        System.out.println(natural_join.getAttrs());
+        for (int i = 0; i < goodRelations.length - 1; i++) {
+            Relation gr1 = goodRelations[i];
+            Relation gr2 = goodRelations[i + 1];
 
+            Relation join = raImpl.join(gr1, gr2);
+
+            assertNotNull(join);
+            assertTrue(join.getSize() >= 0);
+            assertTrue(join.getSize() <= gr1.getSize() * gr2.getSize());
+            assertTrue(join.getAttrs().size() <= gr1.getAttrs().size() + gr2.getAttrs().size() - 1);
+
+            join.print();
+        }
+
+        // --- Bad Tests --------------------------------------------------------------------------
+        Relation[] badRelations = {
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))),
+                classroom_relation, // different table, different attributes
+        };
+
+        for (int i = 0; i < badRelations.length - 1; i++) {
+            Relation br1 = badRelations[i];
+            Relation br2 = badRelations[i + 1];
+
+            assertThrows(Exception.class, () -> {
+                raImpl.join(br1, br2);
+            });
+        }
     }
 
     @Test

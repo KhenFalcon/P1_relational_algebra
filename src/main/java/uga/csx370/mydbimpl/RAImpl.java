@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.naming.directory.InvalidAttributesException;
+
 import uga.csx370.mydb.Cell;
 import uga.csx370.mydb.Predicate;
 import uga.csx370.mydb.RA;
@@ -268,6 +270,10 @@ public Relation join(Relation rel1, Relation rel2) {
     // Find attributes shared by both relations
     List<String> commonAttrs = new ArrayList<>(attrs1);
     commonAttrs.retainAll(attrs2);
+
+    // check if there are no common attributes, if there isn't, throw an exception
+    if(commonAttrs.isEmpty())
+        throw new IllegalArgumentException("There are no common attributes between rel1 and rel2. For a cross join, use RAImpl.cartesianProduct().");
 
     // Build the resulting attribute names and types.
     // Start with everything from rel1.
