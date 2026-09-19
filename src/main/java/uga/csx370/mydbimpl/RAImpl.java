@@ -178,21 +178,23 @@ public class RAImpl implements RA {
 
     @Override
     public Relation rename(Relation rel, List<String> origAttr, List<String> renamedAttr) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'rename'");
 
         List<String> rel_attrs = rel.getAttrs(); // gets rel attributes
-        if (origAttr.size() != renamedAttr.size()) {
+       
+        // checking if attr lists are not null or empty, if not, it throws an exception
+        if (origAttr == null || origAttr.isEmpty())
+            throw new IllegalArgumentException("Attribute list, origAttr, cannot be null or empty");
+        if (renamedAttr == null || renamedAttr.isEmpty())
+            throw new IllegalArgumentException("Attribute list, renamedAttr, cannot be null or empty");
+
+        // checking if attr lists are of equal size, if not, it throws an exception
+         if (origAttr.size() != renamedAttr.size())
             throw new IllegalArgumentException("Argument counts do not match for origAttr and renamedAttr");
-        }
-        for (String attr: origAttr) {
-            if (!rel_attrs.contains(attr)) {
-                throw new IllegalArgumentException("Attribute in origAttr is not in rel");
-            }
-            // checking if attr in origAttr is in rel_attrs, if not, it throws exception
 
-        }
-
+        // checking if attr in origAttr is in rel_attrs, if not, it throws an exception
+        if (!rel_attrs.containsAll(origAttr))
+            throw new IllegalArgumentException("Attribute in origAttr is not in rel");
+            
         List<String> new_attrs = new ArrayList<>(rel_attrs); // list built to contain new attribute names
         for (int i = 0; i < origAttr.size(); i ++) { // looping through original attributes
             String oldColumnName = origAttr.get(i); // gets old column name
@@ -213,13 +215,10 @@ public class RAImpl implements RA {
         }
 
         return rename_rel;
-
     }
 
     @Override
     public Relation cartesianProduct(Relation rel1, Relation rel2) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'cartesianProduct'");
 
         List<String> rel1_attrs = rel1.getAttrs();
         List<String> rel2_attrs = rel2.getAttrs();
@@ -257,10 +256,7 @@ public class RAImpl implements RA {
 
         } // outer for loop for row in rel1 -> combines specific row with all the rows in rel2
 
-        
         return cartProd; // returns cartesian product
-
-
     }
 
     @Override
@@ -272,6 +268,10 @@ public Relation join(Relation rel1, Relation rel2) {
     // Find attributes shared by both relations
     List<String> commonAttrs = new ArrayList<>(attrs1);
     commonAttrs.retainAll(attrs2);
+
+    // check if there are no common attributes, if there isn't, throw an exception
+    if(commonAttrs.isEmpty())
+        throw new IllegalArgumentException("There are no common attributes between rel1 and rel2. For a cross join, use RAImpl.cartesianProduct().");
 
     // Build the resulting attribute names and types.
     // Start with everything from rel1.
@@ -332,11 +332,8 @@ public Relation join(Relation rel1, Relation rel2) {
 
     @Override
     public Relation join(Relation rel1, Relation rel2, Predicate p) {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Unimplemented method 'join'");
 
         // do cartProd first and then do theta join
-
         List<String> rel1_attrs = rel1.getAttrs();
         List<String> rel2_attrs = rel2.getAttrs(); 
 

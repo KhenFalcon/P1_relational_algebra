@@ -18,7 +18,6 @@ import uga.csx370.mydb.Type;
  * Warning: the criterion is a cell object and its type must match the type of the column being 
  * checked, check() will throw an IllegalArgumentException if the types do not match.
  * 
- * jcm68203
  */
 public class PredicateImpl implements Predicate {
 

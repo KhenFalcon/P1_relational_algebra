@@ -33,6 +33,9 @@ public class RAImplTest {
 
     private RAImpl raImpl;
     private Relation instructor_relation;
+    private Relation student_relation;
+    private Relation classroom_relation;
+    private Relation department_relation;
 
     @BeforeAll
     public void setup() {
@@ -40,11 +43,32 @@ public class RAImplTest {
         assertNotNull(raImpl);
 
         instructor_relation = new RelationBuilder()
-            .attributeNames(List.of("ID", "name", "dept_name", "salary"))
-            .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
-            .build();
+                .attributeNames(List.of("ID", "name", "dept_name", "salary"))
+                .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
+                .build();
         instructor_relation.loadData("test-tables/instructor.csv");
         validInstructorRelation();
+
+        student_relation = new RelationBuilder()
+                .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
+                .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
+                .build();
+        student_relation.loadData("test-tables/student.csv");
+        validStudentRelation();
+
+        classroom_relation = new RelationBuilder()
+                .attributeNames(List.of("building", "room_number", "capacity"))
+                .attributeTypes(List.of(Type.STRING, Type.INTEGER, Type.INTEGER))
+                .build();
+        classroom_relation.loadData("test-tables/classroom.csv");
+        validClassroomRelation();
+
+        department_relation = new RelationBuilder()
+                .attributeNames(List.of("dept_name", "building", "budget"))
+                .attributeTypes(List.of(Type.STRING, Type.STRING, Type.DOUBLE))
+                .build();
+        department_relation.loadData("test-tables/department.csv");
+        validDepartmentrRelation();
     }
 
     @Test
@@ -54,7 +78,54 @@ public class RAImplTest {
     public void validInstantiation() {
         raImpl = new RAImpl();
         assertNotNull(raImpl);
+    }
 
+    @Test
+    public void validInstructorRelation() {
+        assertNotNull(instructor_relation);
+        assertEquals(4, instructor_relation.getAttrs().size());
+        assertEquals(4, instructor_relation.getTypes().size());
+        assertEquals(50, instructor_relation.getSize());
+
+        Cell firstCell = instructor_relation.getRow(0).get(0);
+        assertNotNull(firstCell);
+        assertEquals(Type.INTEGER, firstCell.getType());
+    }
+
+    @Test
+    public void validStudentRelation() {
+        assertNotNull(student_relation);
+        assertEquals(4, student_relation.getAttrs().size());
+        assertEquals(4, student_relation.getTypes().size());
+        assertEquals(2000, student_relation.getSize());
+
+        Cell firstCell = student_relation.getRow(0).get(0);
+        assertNotNull(firstCell);
+        assertEquals(Type.INTEGER, firstCell.getType());
+    }
+
+    @Test
+    public void validClassroomRelation() {
+        assertNotNull(classroom_relation);
+        assertEquals(3, classroom_relation.getAttrs().size());
+        assertEquals(3, classroom_relation.getTypes().size());
+        assertEquals(30, classroom_relation.getSize());
+
+        Cell firstCell = classroom_relation.getRow(0).get(0);
+        assertNotNull(firstCell);
+        assertEquals(Type.STRING, firstCell.getType());
+    }
+    
+    @Test 
+    public void validDepartmentrRelation() {
+        assertNotNull(department_relation);
+        assertEquals(3, department_relation.getAttrs().size());
+        assertEquals(3, department_relation.getTypes().size());
+        assertEquals(20, department_relation.getSize());
+
+        Cell firstCell = department_relation.getRow(0).get(0);
+        assertNotNull(firstCell);
+        assertEquals(Type.STRING, firstCell.getType());
     }
 
     @Test
@@ -68,7 +139,7 @@ public class RAImplTest {
             new PredicateImpl(1, "!=", Cell.val("Mird")), // name is not Mird
             new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
             new PredicateImpl(0, ">", Cell.val(60000)), // ID is greater than 60000
-            new PredicateImpl(0, "*", Cell.val(0)), // wildcard operator, should return all rows
+            new PredicateImpl(0, "*", 0), // wildcard operator, should return all rows
         };
 
         for (Predicate p : predicates) {
@@ -120,8 +191,7 @@ public class RAImplTest {
             Relation result = raImpl.project(instructor_relation, attr);
             
             assertNotNull(result);
-            assertTrue(result.getSize() <= 50);
-            assertFalse(result.getSize() < 0);
+            assertTrue(result.getSize() == 50);
             assertEquals(attr.size(), result.getAttrs().size());
             assertEquals(attr.size(), result.getTypes().size());
 
@@ -152,20 +222,19 @@ public class RAImplTest {
     public void testUnion() {
 
         // Valid tests (borrowed predicates from Joshua's select tests!)
-        PredicateImpl[] predicates = new PredicateImpl[] {
+        Predicate[] predicates = new PredicateImpl[] {
                 new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
                 new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
                 new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
                 new PredicateImpl(1, "=", Cell.val("Mird")), // name is Mird
-                new PredicateImpl(1, "!=", Cell.val("Mird")), // name is not Mird
                 new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
                 new PredicateImpl(0, ">", Cell.val(60000)), // ID is greater than 60000
                 new PredicateImpl(0, "*", Cell.val(0)), // wildcard operator, should return all rows
         };
 
         for (int i = 0; i < predicates.length - 1; i++) {
-            PredicateImpl predicate1 = predicates[i];
-            PredicateImpl predicate2 = predicates[i + 1];
+            Predicate predicate1 = predicates[i];
+            Predicate predicate2 = predicates[i + 1];
 
             Relation predicateResult1 = raImpl.select(instructor_relation, predicate1);
             Relation predicateResult2 = raImpl.select(instructor_relation, predicate2);
@@ -185,54 +254,57 @@ public class RAImplTest {
             assertTrue(unionResult.getSize() >= predicateResult2.getSize());
             assertTrue(unionResult.getSize() <= predicateResult1.getSize() + predicateResult2.getSize());
 
-            System.out.printf("Union relation of predicates %d & %d: ", i, i + 1);
+            System.out.printf("Union relation of predicates %d & %d: \n", i, i + 1);
+            System.out.printf("\t%s \n\t%s\n", predicate1.toString(), predicate2.toString());
             unionResult.print();
             System.out.println();
         }
 
         // Invalid Tests
 
-        // Different Arity
-        Relation projRel1 = raImpl.project(instructor_relation, List.of("ID", "name"));
-        Relation projRel2 = raImpl.project(instructor_relation, List.of("ID", "name", "salary"));
+        Relation[] badRelations = {
+            raImpl.project(instructor_relation, List.of("ID", "name")),
+            raImpl.project(instructor_relation, List.of("ID", "name", "salary")), // additional attribute
+            raImpl.project(instructor_relation, List.of("ID", "name")), // missing attribute
+            raImpl.project(instructor_relation, List.of("name", "salary")), // partial mismatch (incl. type mismatch)
+            raImpl.project(instructor_relation, List.of("ID", "dept_name")) // complete mismatch (incl. type mismatch)
+        };
 
-        assertNotNull(projRel1);
-        assertTrue(projRel1.getSize() <= 50);
-        assertFalse(projRel1.getSize() < 0);
+        for (int i = 0; i < badRelations.length - 1; i++) {
+            Relation br1 = badRelations[i];
+            Relation br2 = badRelations[i + 1];
 
-        assertNotNull(projRel2);
-        assertTrue(projRel2.getSize() <= 50);
-        assertFalse(projRel2.getSize() < 0);
+            // test that the relations are not flawed on their own
+            assertNotNull(br1);
+            assertTrue(br1.getSize() <= 50);
+            assertFalse(br1.getSize() < 0);
+            
+            assertNotNull(br2);
+            assertTrue(br2.getSize() <= 50);
+            assertFalse(br2.getSize() < 0);
 
-        assertThrows(IllegalArgumentException.class, () -> raImpl.union(projRel1, projRel2));
-
-        // Different Attribute Types
-        Relation projRel3 = raImpl.project(instructor_relation, List.of("dept_name", "salary"));
-
-        assertNotNull(projRel3);
-        assertTrue(projRel3.getSize() <= 50);
-        assertFalse(projRel3.getSize() < 0);
-
-        assertThrows(IllegalArgumentException.class, () -> raImpl.union(projRel1, projRel3));
+            // confirm that union of the two relations will fail
+            assertThrows(IllegalArgumentException.class, () -> raImpl.union(br1, br2));
+        }
     }
 
     @Test
     public void testIntersect() {
 
         // Valid tests (borrowed predicates from Joshua's select tests!)
-        PredicateImpl[] predicates = new PredicateImpl[] {
+        Predicate[] predicates = new PredicateImpl[] {
                 new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
                 new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
                 new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
                 new PredicateImpl(1, "!=", Cell.val("Mird")), // name is not Mird
-                new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
                 new PredicateImpl(0, ">", Cell.val(60000)), // ID is greater than 60000
+                new PredicateImpl(0, "<=", Cell.val(10000)), // ID is less than or equal to 10000
                 new PredicateImpl(0, "*", Cell.val(0)), // wildcard operator, should return all rows
         };
 
         for (int i = 0; i < predicates.length - 1; i++) {
-            PredicateImpl predicate1 = predicates[i];
-            PredicateImpl predicate2 = predicates[i + 1];
+            Predicate predicate1 = predicates[i];
+            Predicate predicate2 = predicates[i + 1];
 
             Relation predicateResult1 = raImpl.select(instructor_relation, predicate1);
             Relation predicateResult2 = raImpl.select(instructor_relation, predicate2);
@@ -247,7 +319,8 @@ public class RAImplTest {
 
             Relation intersectResult = raImpl.intersect(predicateResult1, predicateResult2);
 
-            System.out.printf("Intersect relation of predicates %d & %d: ", i, i + 1);
+            System.out.printf("Intersect relation of predicates %d & %d: \n", i, i + 1);
+            System.out.printf("\t%s \n\t%s\n", predicate1.toString(), predicate2.toString());
             intersectResult.print();
             System.out.println();
         }
@@ -255,87 +328,238 @@ public class RAImplTest {
         // Invalid Tests
 
         // Different Arity
-        Relation projRel1 = raImpl.project(instructor_relation, List.of("ID", "name"));
-        Relation projRel2 = raImpl.project(instructor_relation, List.of("ID", "name", "salary"));
+        Relation[] badRelations = {
+            raImpl.project(instructor_relation, List.of("ID", "name")),
+            raImpl.project(instructor_relation, List.of("ID", "name", "salary")), // additional attribute
+            raImpl.project(instructor_relation, List.of("ID", "name")), // missing attribute
+            raImpl.project(instructor_relation, List.of("name", "salary")), // partial mismatch (incl. type mismatch)
+            raImpl.project(instructor_relation, List.of("ID", "dept_name")) // complete mismatch (incl. type mismatch)
+        };
 
-        assertNotNull(projRel1);
-        assertTrue(projRel1.getSize() <= 50);
-        assertFalse(projRel1.getSize() < 0);
+        for (int i = 0; i < badRelations.length - 1; i++) {
+            Relation br1 = badRelations[i];
+            Relation br2 = badRelations[i + 1];
 
-        assertNotNull(projRel2);
-        assertTrue(projRel2.getSize() <= 50);
-        assertFalse(projRel2.getSize() < 0);
+            // test that the relations are not flawed on their own
+            assertNotNull(br1);
+            assertTrue(br1.getSize() <= 50);
+            assertFalse(br1.getSize() < 0);
+            
+            assertNotNull(br2);
+            assertTrue(br2.getSize() <= 50);
+            assertFalse(br2.getSize() < 0);
 
-        assertThrows(IllegalArgumentException.class, () -> raImpl.intersect(projRel1, projRel2));
-
-        // Different Attribute Types
-        Relation projRel3 = raImpl.project(instructor_relation, List.of("dept_name", "salary"));
-
-        assertNotNull(projRel3);
-        assertTrue(projRel3.getSize() <= 50);
-        assertFalse(projRel3.getSize() < 0);
-
-        assertThrows(IllegalArgumentException.class, () -> raImpl.intersect(projRel1, projRel3));
+            // confirm that union of the two relations will fail
+            assertThrows(IllegalArgumentException.class, () -> raImpl.intersect(br1, br2));
+        }
     }
 
     @Test
-    public void validInstructorRelation() {
-        assertNotNull(instructor_relation);
-        assertEquals(4, instructor_relation.getAttrs().size());
-        assertEquals(4, instructor_relation.getTypes().size());
-        assertEquals(50, instructor_relation.getSize());
+    public void testDiff() {
+        // --- Good Tests -------------------------------------------------------------------------
+        Predicate[] inversePredicates = {
+                new PredicateImpl(2, "=", Cell.val("Athletics")), // department name is Athletics
+                new PredicateImpl(2, "!=", Cell.val("Athletics")), // department name is not Athletics
+                new PredicateImpl(3, ">", Cell.val(100000.0)), // salary is greater than 100000.0
+                new PredicateImpl(3, "<=", Cell.val(100000.0)), // salary is less than or equal to 100000.0
+                new PredicateImpl(0, "<", Cell.val(100)), // ID is less than 100 (should return no rows)
+                new PredicateImpl(0, ">=", Cell.val(100)), // ID is greater than or equal to 100 (should return all rows)
+                new PredicateImpl(1, "=", Cell.val("Mird")), // name is Mird
+                new PredicateImpl(1, "!=", Cell.val("Mird")) // name is not Mird
+        };
 
-        Cell firstCell = instructor_relation.getRow(0).get(0);
-        assertNotNull(firstCell);
-        assertEquals(Type.INTEGER, firstCell.getType());
+        for (int i = 0; i < inversePredicates.length && i < inversePredicates.length - 1; i += 2) {
+            Relation r1 = raImpl.select(instructor_relation, inversePredicates[i]);
+            Relation r2 = raImpl.select(instructor_relation, inversePredicates[i + 1]); // should always be the inverse of r1
+
+            Relation diff1 = raImpl.diff(instructor_relation, r1);
+            Relation diff2 = raImpl.diff(instructor_relation, r2); // should always be tihe inverse of diff1
+
+            // NOTE: assertEquals doesn't work for relation-type objects
+
+            // assert size comparisons
+            assertTrue(diff1.getSize() == r2.getSize());
+            assertTrue(diff2.getSize() == r1.getSize());
+            assertTrue(r1.getSize() == instructor_relation.getSize() - diff1.getSize());
+            assertTrue(r2.getSize() == instructor_relation.getSize() - diff2.getSize());
+
+            assertTrue(r1.getSize() >= 0);
+            assertTrue(r2.getSize() >= 0);
+            assertTrue(diff1.getSize() >= 0);
+            assertTrue(diff2.getSize() >= 0);
+
+            assertTrue(r1.getSize() <= instructor_relation.getSize());
+            assertTrue(r2.getSize() <= instructor_relation.getSize());
+            assertTrue(diff1.getSize() <= instructor_relation.getSize());
+            assertTrue(diff2.getSize() <= instructor_relation.getSize());
+        }
+        
+        // --- Bad Tests --------------------------------------------------------------------------
+
+        Relation[] incompatableRelations = {
+                instructor_relation,
+                raImpl.project(instructor_relation, List.of("ID", "dept_name")), // fewer, matching attributes, matching entries
+                raImpl.project(instructor_relation, List.of("ID", "salary")), // same number, but mismatching attributes, matching entries 
+                raImpl.project(instructor_relation, List.of("name", "salary")), // same number, but wrong attributes 
+                instructor_relation, // more, matching attributes, matching entries
+                student_relation // completely different table
+        };
+
+        for (int i = 0; i < incompatableRelations.length - 1; i++) {
+            Relation ir1 = incompatableRelations[i];
+            Relation ir2 = incompatableRelations[i + 1];
+
+            assertNotNull(ir1);
+            assertNotNull(ir2);
+    
+
+            assertThrows(Exception.class, () -> {
+                raImpl.diff(ir1, ir2);
+            });
+        }
     }
-
-
 
     @Test
     public void testRename() {
-        Relation rel_rename = raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("rel1_ID", "rel1_name", "rel1_dept_name", "rel1_salary"));
-        rel_rename.print(); // renaming all 4 columns
-        System.out.println(rel_rename.getAttrs());
+        // --- Good Tests -------------------------------------------------------------------------
+        List<List<String>> renameLists = List.of(
+            List.of("ID", "name", "dept_name", "salary"), 
+            List.of("rel1_ID", "rel1_name", "rel1_dept_name", "rel1_salary"),
+                            
+            List.of("ID", "name"),
+            List.of("rel1.ID", "rel1.name"),
+                            
+            List.of("salary"), 
+            List.of("rel1.salary"),
+                    
+            List.of("dept_name"), 
+            List.of("re1.dept_name")
+        );
 
-        Relation rel_rename2 = raImpl.rename(instructor_relation, List.of("ID", "name"), List.of("rel1.ID", "rel1.name"));
-        rel_rename2.print(); // renaming only first two columns
-        System.out.println(rel_rename2.getAttrs());
+        for (int i = 0; i < renameLists.size() && i < renameLists.size() - 1; i += 2) {
+            List<String> currNames = renameLists.get(i);
+            List<String> newNames = renameLists.get(i + 1);
 
-        Relation rel_rename3 = raImpl.rename(instructor_relation, List.of("salary"), List.of("rel1.salary"));
-        rel_rename3.print(); // renaming last column
-        System.out.println(rel_rename3.getAttrs());
+            assertTrue(currNames.size() == newNames.size());
+            assertTrue(instructor_relation.getAttrs().containsAll(currNames));
+            newNames.forEach(newName -> assertFalse(instructor_relation.getAttrs().contains(newName)));
 
-        Relation rel_rename4 = raImpl.rename(instructor_relation, List.of("dept_name"), List.of("re1.dept_name"));
-        rel_rename4.print();
-        System.out.println(rel_rename4.getAttrs());
+            Relation renamedRelation = raImpl.rename(instructor_relation, currNames, newNames);
 
+            assertTrue(renamedRelation.getAttrs().containsAll(newNames));
+            currNames.forEach(currName -> assertFalse(renamedRelation.getAttrs().contains(currName)));
+
+            for (int j = 0; j < currNames.size(); j++)
+                assertTrue(instructor_relation.getAttrIndex(currNames.get(j)) == renamedRelation
+                        .getAttrIndex(newNames.get(j)));
+
+            renamedRelation.print();
+        }
+        
+        // --- Bad Tests --------------------------------------------------------------------------
+        List<List<String>> badLists = List.of(
+            // empty lists
+            // List.of(), 
+            // List.of(),
+            // mismatchcing lengths (extra rename)
+            List.of("ID"),
+            List.of("rel1.ID", "rel1.name"),
+            // mismatching lengths (extra name)
+            List.of("dept_name", "salary"), 
+            List.of("re1.dept_name"),
+            // non-existant attribute
+            List.of("YRALAS"), 
+            List.of("rel1.salary")
+        );
+
+        for (int i = 0; i < badLists.size() && i < badLists.size() - 1; i += 2) {
+            List<String> currNames = badLists.get(i);
+            List<String> newNames = badLists.get(i + 1);
+
+            assertThrows(Exception.class, () -> {
+                raImpl.rename(instructor_relation, currNames, newNames);
+            });
+        }
     }
 
     @Test
     public void testCartesianProduct() {
+        // --- Good Tests -------------------------------------------------------------------------
+        Relation[] goodRelations = {
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))), // department name is Athletics
+                raImpl.select(classroom_relation, new PredicateImpl(0, "=", Cell.val("Gates"))), // building is gates
+                raImpl.select(instructor_relation, new PredicateImpl(3, ">", Cell.val(100000.0))), // salary is greater than 100000.0
+                raImpl.select(classroom_relation, new PredicateImpl(1, ">", Cell.val(900))), // building is gates
+                raImpl.select(instructor_relation, new PredicateImpl(0, "<", Cell.val(100))), // ID is less than 100 (should return no rows)
+                raImpl.select(classroom_relation, new PredicateImpl(2, "<", Cell.val(15))), // building is gates
+        };
+
+        for (int i = 0; i < goodRelations.length - 1; i++) {
+            Relation cartProd = raImpl.cartesianProduct(goodRelations[i], goodRelations[i + 1]);
+
+            assertNotNull(cartProd);
+            assertTrue(cartProd.getSize() >= 0);
+            assertTrue(cartProd.getSize() <= instructor_relation.getSize() * classroom_relation.getSize());
+            assertTrue(cartProd.getSize() == goodRelations[i].getSize() * goodRelations[i + 1].getSize());
+
+            cartProd.print();
+        }
         
-        Relation classroom_relation = new RelationBuilder().attributeNames(List.of("building", "room_number", "capacity")).attributeTypes(List.of(Type.STRING, Type.INTEGER, Type.INTEGER)).build();
-        classroom_relation.loadData("test-tables/classroom.csv");
-        Relation cartesianProduct = raImpl.cartesianProduct(instructor_relation, classroom_relation);
-        cartesianProduct.print();
-        System.out.println(instructor_relation.getAttrs());
-        System.out.println(classroom_relation.getAttrs());
-        System.out.println(instructor_relation.getTypes());
-        System.out.println(classroom_relation.getTypes());
-        System.out.println(cartesianProduct.getAttrs());
-        System.out.println(cartesianProduct.getTypes());
+        // --- Bad Tests --------------------------------------------------------------------------
+        Relation[] badRelations = {
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))),
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))), // duplicate relation
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Pol. Sci"))), // Same attributes, different entries
+        };
+
+        for (int i = 0; i < badRelations.length - 1; i++) {
+            Relation br1 = badRelations[i];
+            Relation br2 = badRelations[i + 1];
+
+            assertThrows(Exception.class, () -> {
+                raImpl.cartesianProduct(br1, br2);
+            });
+        }
     }
 
     @Test
     public void testNaturalJoin() {
+        // --- Good Tests -------------------------------------------------------------------------
+        Relation[] goodRelations = {
+                instructor_relation,
+                department_relation,
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))),
+                raImpl.select(department_relation, new PredicateImpl(0, "=", Cell.val("Athletics"))),
+        };
 
-        Relation dept_relation = new RelationBuilder().attributeNames(List.of("dept_name", "building", "budget")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        dept_relation.loadData("test-tables/department.csv");
-        Relation natural_join = raImpl.join(instructor_relation, dept_relation);
-        natural_join.print();
-        System.out.println(natural_join.getAttrs());
+        for (int i = 0; i < goodRelations.length - 1; i++) {
+            Relation gr1 = goodRelations[i];
+            Relation gr2 = goodRelations[i + 1];
 
+            Relation join = raImpl.join(gr1, gr2);
+
+            assertNotNull(join);
+            assertTrue(join.getSize() >= 0);
+            assertTrue(join.getSize() <= gr1.getSize() * gr2.getSize());
+            assertTrue(join.getAttrs().size() <= gr1.getAttrs().size() + gr2.getAttrs().size() - 1);
+
+            join.print();
+        }
+
+        // --- Bad Tests --------------------------------------------------------------------------
+        Relation[] badRelations = {
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))),
+                classroom_relation, // different table, different attributes
+        };
+
+        for (int i = 0; i < badRelations.length - 1; i++) {
+            Relation br1 = badRelations[i];
+            Relation br2 = badRelations[i + 1];
+
+            assertThrows(Exception.class, () -> {
+                raImpl.join(br1, br2);
+            });
+        }
     }
 
     @Test
@@ -356,61 +580,14 @@ public class RAImplTest {
         theta_join2.print();
         System.out.println(instructor_relation.getAttrs());
         System.out.println(theta_join2.getAttrs());
-
-
-
-    }
-
-    @Test
-    public void createCourseTable() {
-        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        course_relation.loadData("test-tables/course_export.csv");
-        Relation project_title = raImpl.project(course_relation, List.of("title"));
-        project_title.print();
-    }
-
-    @Test 
-    public void createStudentTable() {
-        Relation students = new RelationBuilder()
-             .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
-             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
-            .build();
-        students.loadData("test-tables/student_export.csv");
-        students.print();
-    }
-
-    @Test
-    public void checkExceptionRename() {
-        //Relation throw_excep_rename = raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("avg_sal"));
-        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.rename(instructor_relation, List.of("ID", "name", "dept_name", "salary"), List.of("avg_sal")));
-        System.out.println(ex1.getMessage());
-        IllegalArgumentException ex2 = assertThrows(IllegalArgumentException.class, () -> raImpl.rename(instructor_relation, List.of("ID", "name", "wowzers", "salary"), List.of("rel1.id", "rel1.name", "rel1.dept_name", "rel1.salary")));
-        System.out.println(ex2.getMessage());
-    }
-
-    @Test
-    public void checkExceptionCartesianProduct() {
-        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        course_relation.loadData("test-tables/course_export.csv");
-
-        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.cartesianProduct(instructor_relation, course_relation));
-        System.out.println(ex1.getMessage());
-
     }
 
     @Test
     public void checkExceptionThetaJoin() {
         Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        course_relation.loadData("test-tables/course_export.csv");
+        course_relation.loadData("test-tables/course.csv");
         Predicate p = new PredicateImpl(2, "=", 6);
         IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.join(instructor_relation, course_relation, p));
         System.out.println(ex1.getMessage());
     }
-
-
-
-
-
-
-
 }

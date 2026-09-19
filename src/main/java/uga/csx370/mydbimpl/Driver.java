@@ -113,20 +113,8 @@ public class Driver {
             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE))
             .build();
         instructors.loadData("test-tables/instructor.csv");
-        
-        
 
-        // instructors.print();
-
-        // Relation students = new RelationBuilder()
-        //     .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
-        //     .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
-        //     .build();
-        // students.loadData("test-tables/student.csv");
-        // System.out.println("\nMyID: jcm68203 : 811281498");
-        // students.print(); // warning: a lot of data will be printed to the console
-
-        // Sasha's Query
+        // --- Sasha's Query ----------------------------------------------------------------------
         System.out.println(
             "\nQuery: Find the names of students who earned an A " +
             "in the Computer Science course \"International Practicum\"."
@@ -179,9 +167,10 @@ public class Driver {
         );
         
         result.print();
+        System.out.println("Number of Entries: " + result.getSize());
         //Sasha query ends here
 
-        // Joshua's Query
+        // --- Joshua's Query ---------------------------------------------------------------------
         System.out.println(
             "\nQuery: Find the IDs and names of all students " +
             "that are advised by the instructor named \"Mird\"."
@@ -226,9 +215,10 @@ public class Driver {
         );
 
         advisorResult.print();
+        System.out.println("Number of Entries: " + advisorResult.getSize());
         // Joshua's query ends here
 
-        // Adiva's Query
+        // --- Adiva's Query ----------------------------------------------------------------------
         System.out.println(
             "\nQuery: Find instructors teaching advanced courses (4+ credits), " +
             "along with the course title, credits, and department name."
@@ -284,9 +274,10 @@ public class Driver {
         );
 
         advancedCourseResult.print();
+        System.out.println("Number of Entries: " + advancedCourseResult.getSize());
         // Adiva's query ends
 
-        // Amy's query
+        // --- Amy's query ------------------------------------------------------------------------
         System.out.println(
             "\nQuery: Find professors who have taught an 8 AM course."
         );
@@ -335,9 +326,10 @@ public class Driver {
         );
 
         eightAMResult.print();
+        System.out.println("Number of Entries: " + eightAMResult.getSize());
         // Amy's Query ends here
 
-        // Mia's Query
+        // --- Mia's Query ------------------------------------------------------------------------
         System.out.println(
             "\nQuery: Find the names of instructors who advise students " +
             "in the Computer Science department."
@@ -382,6 +374,7 @@ public class Driver {
         );
 
         csAdvisorResult.print();
+        System.out.println("Number of Entries: " + csAdvisorResult.getSize());
         // Mia's Query ends here
     }
 
