@@ -34,6 +34,7 @@ public class RAImplTest {
     private RAImpl raImpl;
     private Relation instructor_relation;
     private Relation student_relation;
+    private Relation classroom_relation;
 
     @BeforeAll
     public void setup() {
@@ -53,6 +54,13 @@ public class RAImplTest {
             .build();
         student_relation.loadData("test-tables/student.csv");
         validStudentRelation();
+
+        classroom_relation = new RelationBuilder()
+            .attributeNames(List.of("building", "room_number", "capacity"))
+            .attributeTypes(List.of(Type.STRING, Type.INTEGER, Type.INTEGER))
+            .build();
+        classroom_relation.loadData("test-tables/classroom.csv");
+        validClassroomRelation();
     }
 
     @Test
@@ -83,9 +91,21 @@ public class RAImplTest {
         assertEquals(4, student_relation.getTypes().size());
         assertEquals(2000, student_relation.getSize());
 
-        Cell firstCell = instructor_relation.getRow(0).get(0);
+        Cell firstCell = student_relation.getRow(0).get(0);
         assertNotNull(firstCell);
         assertEquals(Type.INTEGER, firstCell.getType());
+    }
+
+    @Test
+    public void validClassroomRelation() {
+        assertNotNull(classroom_relation);
+        assertEquals(3, classroom_relation.getAttrs().size());
+        assertEquals(3, classroom_relation.getTypes().size());
+        assertEquals(30, classroom_relation.getSize());
+
+        Cell firstCell = classroom_relation.getRow(0).get(0);
+        assertNotNull(firstCell);
+        assertEquals(Type.STRING, firstCell.getType());
     }
     
     @Test
@@ -444,17 +464,42 @@ public class RAImplTest {
 
     @Test
     public void testCartesianProduct() {
+        // --- Good Tests -------------------------------------------------------------------------
+        Relation[] goodRealtions = {
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))), // department name is Athletics
+                raImpl.select(classroom_relation, new PredicateImpl(0, "=", Cell.val("Gates"))), // building is gates
+                raImpl.select(instructor_relation, new PredicateImpl(3, ">", Cell.val(100000.0))), // salary is greater than 100000.0
+                raImpl.select(classroom_relation, new PredicateImpl(1, ">", Cell.val(900))), // building is gates
+                raImpl.select(instructor_relation, new PredicateImpl(0, "<", Cell.val(100))), // ID is less than 100 (should return no rows)
+                raImpl.select(classroom_relation, new PredicateImpl(2, "<", Cell.val(15))), // building is gates
+        };
+
+        for (int i = 0; i < goodRealtions.length - 1; i++) {
+            Relation cartProd = raImpl.cartesianProduct(goodRealtions[i], goodRealtions[i + 1]);
+
+            assertNotNull(cartProd);
+            assertTrue(cartProd.getSize() >= 0);
+            assertTrue(cartProd.getSize() <= instructor_relation.getSize() * classroom_relation.getSize());
+            assertTrue(cartProd.getSize() == goodRealtions[i].getSize() * goodRealtions[i + 1].getSize());
+
+            cartProd.print();
+        }
         
-        Relation classroom_relation = new RelationBuilder().attributeNames(List.of("building", "room_number", "capacity")).attributeTypes(List.of(Type.STRING, Type.INTEGER, Type.INTEGER)).build();
-        classroom_relation.loadData("test-tables/classroom.csv");
-        Relation cartesianProduct = raImpl.cartesianProduct(instructor_relation, classroom_relation);
-        cartesianProduct.print();
-        System.out.println(instructor_relation.getAttrs());
-        System.out.println(classroom_relation.getAttrs());
-        System.out.println(instructor_relation.getTypes());
-        System.out.println(classroom_relation.getTypes());
-        System.out.println(cartesianProduct.getAttrs());
-        System.out.println(cartesianProduct.getTypes());
+        // --- Bad Tests --------------------------------------------------------------------------
+        Relation[] badRelations = {
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))),
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Athletics"))), // duplicate relation
+                raImpl.select(instructor_relation, new PredicateImpl(2, "=", Cell.val("Pol. Sci"))), // Same attributes, different entries
+        };
+
+        for (int i = 0; i < badRelations.length - 1; i++) {
+            Relation br1 = badRelations[i];
+            Relation br2 = badRelations[i + 1];
+
+            assertThrows(Exception.class, () -> {
+                raImpl.cartesianProduct(br1, br2);
+            });
+        }
     }
 
     @Test
@@ -486,33 +531,6 @@ public class RAImplTest {
         theta_join2.print();
         System.out.println(instructor_relation.getAttrs());
         System.out.println(theta_join2.getAttrs());
-    }
-
-    @Test
-    public void createCourseTable() {
-        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        course_relation.loadData("test-tables/course.csv");
-        Relation project_title = raImpl.project(course_relation, List.of("title"));
-        project_title.print();
-    }
-
-    @Test 
-    public void createStudentTable() {
-        Relation students = new RelationBuilder()
-             .attributeNames(List.of("ID", "name", "dept_name", "tot_cred"))
-             .attributeTypes(List.of(Type.INTEGER, Type.STRING, Type.STRING, Type.INTEGER))
-            .build();
-        students.loadData("test-tables/student.csv");
-        students.print();
-    }
-
-    @Test
-    public void checkExceptionCartesianProduct() {
-        Relation course_relation = new RelationBuilder().attributeNames(List.of("course_id", "title", "dept_name", "credits")).attributeTypes(List.of(Type.STRING, Type.STRING, Type.STRING, Type.DOUBLE)).build();
-        course_relation.loadData("test-tables/course.csv");
-
-        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class, () -> raImpl.cartesianProduct(instructor_relation, course_relation));
-        System.out.println(ex1.getMessage());
     }
 
     @Test
